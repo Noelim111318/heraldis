@@ -4,6 +4,17 @@
  */
 @import "engine/engine.css";
 
+/* Cinzel (capitales romaines gravees, OFL) pour les titres ; le texte courant
+   reste en Nunito pour la lisibilite. Auto-hebergee (fonts/) : hors-ligne. */
+@font-face {
+  font-family: 'Cinzel';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url('fonts/cinzel-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 :root {
   /* Heraldique : nuit bleue et or. */
   --bg: #121526;
@@ -22,6 +33,7 @@
   --red: #EF6A5E;
   --green: #5FCB85;
   --maxw: 560px;
+  --font-title: 'Cinzel', var(--font);
 
   --gold: #E8B84A;
   --gold-deep: #9C7422;
@@ -37,7 +49,12 @@
   clip: rect(0 0 0 0); white-space: nowrap;
 }
 
-.header h1 { letter-spacing: 0.5px; }
+/* Tout ce qui est « titre » : en-tete, titres d'ecran, legendes, noms des
+   joueurs, boutons principaux, resultat. */
+.header h1, h2, .rules h3, .field legend, .player-name, .btn--primary, .btn--resume, .stats-table caption {
+  font-family: var(--font-title);
+}
+.header h1 { letter-spacing: 1.5px; font-weight: 900; }
 .header .fleur { font-size: 0.8em; vertical-align: 0.05em; }
 /* Pendant la partie, l'entete se fait discrete pour laisser la place au plateau. */
 body.play-active .header { padding-top: 0; }
