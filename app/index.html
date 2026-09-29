@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Heraldis</title>
+  <meta name="description" content="Heraldis — jeu d&#39;alignement héraldique à 2 joueurs, contre un ami ou l&#39;ordinateur.">
+  <meta name="app-version" content="v1.0.0">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0B0D19">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Heraldis">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<a class="skip-link" href="#main">Aller au contenu</a>
+
+<div class="stars" id="stars"></div>
+<div class="burst-container" id="burst"></div>
+
+<main class="container" id="main">
+  <div class="install-row" id="install-row" hidden>
+    <button class="install-btn" id="install-btn" type="button" aria-label="Installer l'application">📲 Installer l'appli</button>
+    <button class="install-dismiss" id="install-dismiss" type="button">Masquer</button>
+    <p class="install-hint" id="install-hint" role="status" hidden></p>
+  </div>
+
+  <div class="header">
+    <div class="version-badge" id="app-version">v1.0.0</div>
+    <h1><span class="fleur" aria-hidden="true">⚜</span> Heraldis</h1>
+    <p>Forgez vos alliances, alignez quatre blasons.</p>
+  </div>
+
+  <!-- ===================================================== ACCUEIL -->
+  <div class="screen active" id="screen-home">
+    <button class="btn btn--resume" id="resume-btn" type="button" hidden>▶ Reprendre la partie en cours</button>
+
+    <section class="panel" aria-labelledby="new-title">
+      <h2 id="new-title">Nouvelle partie</h2>
+
+      <fieldset class="field">
+        <legend>Mode</legend>
+        <div class="seg" id="mode-seg">
+          <label><input type="radio" name="mode" value="ai" checked><span>🤖 Contre l'IA</span></label>
+          <label><input type="radio" name="mode" value="duo"><span>👥 À deux</span></label>
+          <label><input type="radio" name="mode" value="demo"><span>🍿 IA contre IA</span></label>
+        </div>
+      </fieldset>
+
+      <div id="opt-ai">
+        <fieldset class="field">
+          <legend>Adversaire</legend>
+          <div class="ai-list" id="ai-list"></div>
+        </fieldset>
+        <fieldset class="field" id="level-field">
+          <legend>Niveau</legend>
+          <div class="seg" id="level-seg"></div>
+        </fieldset>
+        <fieldset class="field">
+          <legend>Vous jouez</legend>
+          <div class="seg" id="side-seg">
+            <label><input type="radio" name="side" value="1" checked><span><i class="dot dot--light"></i> Clair <small>commence</small></span></label>
+            <label><input type="radio" name="side" value="2"><span><i class="dot dot--dark"></i> Foncé</span></label>
+            <label><input type="radio" name="side" value="0"><span>🎲 Au hasard</span></label>
+          </div>
+        </fieldset>
+      </div>
+
+      <div id="opt-demo" hidden>
+        <div class="demo-grid">
+          <label class="select-field"><span><i class="dot dot--light"></i> IA Clair</span>
+            <select id="demo-ai-1"></select>
+          </label>
+          <label class="select-field"><span><i class="dot dot--dark"></i> IA Foncé</span>
+            <select id="demo-ai-2"></select>
+          </label>
+        </div>
+      </div>
+
+      <p class="field-note" id="opt-duo" hidden>Deux joueurs sur le même appareil : passez-vous l'écran à chaque tour.</p>
+
+      <button class="btn btn--primary btn--wide" id="start-btn" type="button">⚔ Commencer</button>
+    </section>
+
+    <div class="home-links">
+      <button class="btn btn--soft" id="rules-btn" type="button">📜 Règles</button>
+      <button class="btn btn--soft" id="stats-btn" type="button">📊 Statistiques</button>
+    </div>
+
+    <section class="panel panel--compact" aria-labelledby="settings-title">
+      <h2 id="settings-title" class="h-small">Réglages</h2>
+      <label class="toggle"><input type="checkbox" id="set-hints" checked><span>Montrer les coups possibles et les captures</span></label>
+      <label class="toggle"><input type="checkbox" id="set-sound" checked><span>Sons</span></label>
+      <label class="toggle"><input type="checkbox" id="set-haptic" checked><span>Vibrations</span></label>
+      <label class="toggle"><input type="checkbox" id="set-coords"><span>Afficher les coordonnées</span></label>
+    </section>
+
+    <div class="home-footer">
+      <a class="diag-link" href="diag.html">Diagnostic</a>
+    </div>
+  </div>
+
+  <!-- ===================================================== JEU -->
+  <div class="screen" id="screen-play">
+    <h2 class="visually-hidden" id="play-title">Partie en cours</h2>
+
+    <div class="players">
+      <div class="player" id="player-1">
+        <div class="player-head"><i class="dot dot--light"></i><span class="player-name" id="name-1">Clair</span></div>
+        <div class="player-sub" id="sub-1"></div>
+        <div class="player-reserve"><span id="reserve-1">13</span> en réserve</div>
+        <div class="player-houses" id="houses-1" aria-label="Maisons possédées"></div>
+      </div>
+      <div class="player" id="player-2">
+        <div class="player-head"><i class="dot dot--dark"></i><span class="player-name" id="name-2">Foncé</span></div>
+        <div class="player-sub" id="sub-2"></div>
+        <div class="player-reserve"><span id="reserve-2">13</span> en réserve</div>
+        <div class="player-houses" id="houses-2" aria-label="Maisons possédées"></div>
+      </div>
+    </div>
+
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+
+    <div class="board-wrap">
+      <div class="board" id="board" role="grid" aria-label="Plateau de jeu"></div>
+    </div>
+
+    <p class="ai-info" id="ai-info"></p>
+
+    <div class="result" id="result" hidden>
+      <h2 id="result-title"></h2>
+      <p id="result-sub"></p>
+      <div class="result-actions">
+        <button class="btn btn--primary" id="again-btn" type="button">🔄 Rejouer</button>
+        <button class="btn btn--soft" id="home-btn" type="button">← Accueil</button>
+      </div>
+    </div>
+
+    <div class="actions" id="actions">
+      <button class="btn btn--soft" id="undo-btn" type="button">↶ Annuler</button>
+      <button class="btn btn--soft" id="hint-btn" type="button">💡 Conseil</button>
+      <button class="btn btn--soft" id="pause-btn" type="button" hidden>⏸ Pause</button>
+      <button class="btn btn--soft" id="quit-btn" type="button">✕ Quitter</button>
+    </div>
+
+    <div class="legend">
+      <span><i class="lg lg--house"></i> Maison : immunisée</span>
+      <span><i class="lg lg--cap"></i> Capturable</span>
+      <span>🏳️ Trêve</span>
+    </div>
+
+    <details class="log">
+      <summary>Historique des coups</summary>
+      <ol id="log-list"></ol>
+    </details>
+  </div>
+
+  <!-- ===================================================== REGLES -->
+  <div class="screen" id="screen-rules">
+    <section class="panel rules">
+      <h2>Règles de Heraldis</h2>
+      <p class="rules-meta">2 joueurs · 8 ans et + · 15 à 20 minutes</p>
+
+      <h3>But du jeu</h3>
+      <p>Être le premier à <strong>aligner 4 pions</strong> de sa couleur, horizontalement, verticalement ou en diagonale.
+        Si le plateau se remplit sans alignement, la partie est <strong>nulle</strong>.</p>
+
+      <h3>Le plateau</h3>
+      <p>25 cases : <strong>10 Maisons Fondatrices</strong> (un seul symbole, bordure dorée) et
+        <strong>15 Alliances</strong> (deux symboles). Les cinq Maisons (Loup 🐺, Aigle 🦅, Ours 🐻, Cerf 🦌 et Sanglier 🐗)
+        apparaissent chacune deux fois.</p>
+      <div class="board board--mini" id="rules-board" aria-hidden="true"></div>
+
+      <h3>Réserve</h3>
+      <p>Chaque joueur a <strong>13 pions</strong>. Un pion capturé retourne aussitôt dans la réserve de son propriétaire.
+        Un joueur qui n'a plus de pion en réserve <strong>passe</strong> son tour.</p>
+
+      <h3>Le Premier Serment</h3>
+      <p>Le Joueur Clair commence. <strong>Pour son tout premier coup, il doit jouer sur une Alliance</strong> :
+        les Maisons lui sont interdites pour ce seul coup. Ensuite, plus aucune restriction.</p>
+
+      <h3>À votre tour</h3>
+      <ul>
+        <li><strong>Placement libre</strong> : posez un pion sur n'importe quelle case vide.</li>
+        <li><strong>Capture</strong> : remplacez un pion adverse par le vôtre, à deux conditions :
+          <ul>
+            <li><strong>Immunité</strong> : un pion sur une Maison ne peut <em>jamais</em> être capturé ;</li>
+            <li><strong>Prérequis d'Alliance</strong> : pour capturer une Alliance, vous devez posséder un pion sur une Maison
+              de <em>chacun</em> de ses deux symboles, n'importe où sur le plateau.</li>
+          </ul>
+        </li>
+      </ul>
+      <p class="example">Exemple : pour capturer une case Aigle + Sanglier, il faut un pion sur une Maison Aigle 🦅
+        et un pion sur une Maison Sanglier 🐗.</p>
+
+      <h3>La Trêve</h3>
+      <p>On ne peut pas reprendre <strong>immédiatement</strong> une case que l'adversaire vient de vous prendre.
+        Il faut jouer ailleurs ce tour-ci ; la reprise redevient possible ensuite.</p>
+
+      <h3>Dans l'application</h3>
+      <ul>
+        <li>Les symboles allumés sous chaque joueur indiquent les Maisons qu'il possède.</li>
+        <li>Un anneau rouge ⚔ signale les pions adverses que vous pouvez capturer ; 🏳️ marque la case sous Trêve.</li>
+        <li>« Conseil » demande à l'IA Minimax le coup qu'elle jouerait à votre place.</li>
+      </ul>
+    </section>
+    <button class="btn btn--soft" id="rules-back-btn" type="button">← Retour</button>
+  </div>
+
+  <!-- ===================================================== STATISTIQUES -->
+  <div class="screen" id="screen-stats">
+    <section class="panel">
+      <h2>Statistiques</h2>
+      <div id="stats-body"></div>
+    </section>
+    <button class="btn btn--soft" id="stats-back-btn" type="button">← Retour</button>
+    <div class="home-footer">
+      <button class="diag-link" id="stats-reset-btn" type="button">Effacer les statistiques</button>
+    </div>
+  </div>
+</main>
+
+<script src="data.js"></script>
+<script src="game.js"></script>
+<script src="ai.js"></script>
+<script src="engine/engine.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
