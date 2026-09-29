@@ -1,77 +1,92 @@
 #!/usr/bin/env python3
-"""Genere les icones PWA : un glyphe sur une tuile jaune, sur un ciel violet
-etoile (le look par defaut du moteur pwa-engine).
+"""Genere les icones PWA de Heraldis : un coin de plateau en bois (2 x 2 cases,
+deux Alliances bicolores et deux Maisons bordees d'or) avec un pion clair
+(erable) et un pion fonce (noyer), sur le fond nuit de l'app.
 
 Sorties (a la racine du projet) :
     icons/icon-192.png
     icons/icon-512.png
     icons/icon-512-maskable.png   (motif reduit + marge de securite)
     icons/apple-touch-icon.png    (180x180, opaque)
-    favicon.ico                   (16 / 32 / 48)
+    favicon.ico                   (16 / 32 / 48 / 64)
 
-Depend de Pillow :  python3 -m pip install pillow
-
---- Personnaliser ---
-Le plus simple : change GLYPH (une ou deux lettres, un emoji ne marche pas
-avec la police) et les couleurs ci-dessous. Pour un dessin geometrique a la
-place du texte, remplace l'appel draw_glyph() dans compose() par tes propres
-primitives ImageDraw.
+Depend seulement de Pillow :  python3 -m pip install pillow
+Le grain du bois est procedural (bruit etire + veines ondulees), sans numpy.
 """
+import math
 import os
-import urllib.request
+import random
 
 try:
-    from PIL import Image, ImageDraw, ImageFilter, ImageFont
+    from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageOps
 except ImportError:
     raise SystemExit("Pillow requis :  python3 -m pip install pillow")
 
 try:
     LANCZOS = Image.Resampling.LANCZOS
+    BICUBIC = Image.Resampling.BICUBIC
 except AttributeError:                       # Pillow < 9.1
     LANCZOS = Image.LANCZOS
+    BICUBIC = Image.BICUBIC
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 ICONS = os.path.join(ROOT, "icons")
-FONT = os.path.join(HERE, "Nunito.ttf")
-FONT_URL = "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/nunito/Nunito%5Bwght%5D.ttf"
 
-# ------------------------------------------------------------------ reglages
-GLYPH = "H"                     # 1-2 caracteres poses sur la tuile
-S = 2048                         # resolution de travail (reduite ensuite)
+S = 1024                                     # resolution de travail
 
-BASE_TOP = (26, 30, 54)          # #1A1E36  haut du fond
-BASE_LOW = (11, 13, 25)          # #0B0D19  bas du fond
-GLOW = (201, 150, 46)            # halo dore
-INK = (18, 21, 38)               # couleur du glyphe
-Y_TOP = (246, 214, 130)          # haut de la tuile
-Y_BOT = (214, 160, 50)           # bas de la tuile
-Y_RIM = (156, 116, 34)           # lisere
+# ------------------------------------------------------------------ couleurs
+BG_TOP = (26, 30, 54)                        # fond nuit (comme l'app)
+BG_LOW = (11, 13, 25)
+GLOW = (201, 150, 46)
+GOLD = (232, 184, 74)
 
-TILE = 0.72                      # cote de la tuile, fraction de l'icone
-TILE_RADIUS = 0.34               # arrondi des coins (fraction du cote)
-GLYPH_SCALE = 0.62               # hauteur du glyphe, fraction du cote de la tuile
+FRAME = ((58, 34, 18), (122, 78, 42))        # noyer : sombre, clair
+MAPLE = ((196, 150, 92), (246, 222, 176))    # pion clair
+WALNUT = ((22, 12, 7), (92, 58, 34))         # pion fonce
 
-STARS = [(0.16, 0.14, 7, 90), (0.83, 0.11, 10, 120), (0.90, 0.44, 6, 80),
-         (0.10, 0.52, 8, 95), (0.22, 0.83, 6, 80), (0.78, 0.85, 9, 110),
-         (0.50, 0.07, 5, 70), (0.93, 0.70, 5, 70), (0.07, 0.30, 5, 65)]
+LOUP, AIGLE, OURS, CERF, SANGLIER = (94, 115, 152), (201, 150, 46), (134, 87, 58), (74, 132, 88), (160, 65, 60)
+
+# 2 x 2 cases : (couleur 1, couleur 2 ou None = Maison, pion 0/1/2)
+CELLS = [
+    (LOUP, AIGLE, 1), (CERF, None, 0),
+    (OURS, SANGLIER, 0), (SANGLIER, None, 2),
+]
+
+
+# ------------------------------------------------------------------ bois
+def grain(w, h, seed, fiber=60, veins=26):
+    """Texture de grain en niveaux de gris (L), fibres horizontales."""
+    rnd = random.Random(seed)
+    random.seed(seed)
+    # fibres : bruit tres etire horizontalement
+    small = Image.effect_noise((max(4, w // fiber), h), 70).resize((w, h), BICUBIC)
+    base = ImageOps.autocontrast(small, cutoff=2).point(lambda v: 150 + v * 105 // 255)
+    # veines : lignes ondulees plus sombres
+    lines = Image.new("L", (w, h), 255)
+    d = ImageDraw.Draw(lines)
+    y = rnd.uniform(0, h / veins)
+    while y < h + 20:
+        amp = rnd.uniform(h * 0.004, h * 0.02)
+        freq = rnd.uniform(1.0, 3.0) * 2 * math.pi / w
+        ph = rnd.uniform(0, 2 * math.pi)
+        drift = rnd.uniform(-0.04, 0.04) * h
+        pts = [(x, y + amp * math.sin(x * freq + ph) + drift * x / w) for x in range(-10, w + 11, 8)]
+        d.line(pts, fill=rnd.randint(95, 175), width=max(1, int(rnd.uniform(0.002, 0.007) * h)))
+        y += rnd.uniform(0.4, 1.6) * h / veins
+    lines = lines.filter(ImageFilter.GaussianBlur(max(1, h // 400)))
+    return ImageChops.multiply(base, lines)
+
+
+def wood(w, h, dark, light, seed, angle=0):
+    g = grain(w, h, seed)
+    if angle:
+        big = grain(int(w * 1.5), int(h * 1.5), seed).rotate(angle, resample=BICUBIC)
+        g = big.crop((int(w * 0.25), int(h * 0.25), int(w * 0.25) + w, int(h * 0.25) + h))
+    return ImageOps.colorize(g, dark, light).convert("RGBA")
 
 
 # ------------------------------------------------------------------ helpers
-def _font():
-    if not os.path.exists(FONT):
-        try:
-            print("Telechargement de Nunito (une fois)...")
-            urllib.request.urlretrieve(FONT_URL, FONT)
-        except Exception as e:                # pas de reseau, URL morte, proxy...
-            raise SystemExit(
-                "Impossible de telecharger la police (%s).\n"
-                "Options : se connecter le temps du 1er run, OU deposer une police\n"
-                "TrueType lisible sous  %s" % (e, FONT)
-            )
-    return FONT
-
-
 def vgrad(w, h, top, bot):
     base = Image.new("RGB", (w, h), top)
     grad = Image.new("L", (1, h))
@@ -80,81 +95,103 @@ def vgrad(w, h, top, bot):
     return Image.composite(Image.new("RGB", (w, h), bot), base, grad.resize((w, h)))
 
 
-def background(scale):
-    img = vgrad(S, S, BASE_TOP, BASE_LOW).convert("RGBA")
+def rrect_mask(box, radius):
+    m = Image.new("L", (S, S), 0)
+    ImageDraw.Draw(m).rounded_rectangle(box, radius=radius, fill=255)
+    return m
+
+
+def stroke(img, shape, box, **kw):
+    """Trace un contour semi-transparent en le melangeant (ImageDraw remplace les pixels)."""
+    layer = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    getattr(ImageDraw.Draw(layer), shape)(box, **kw)
+    img.alpha_composite(layer)
+
+
+def shadow(img, mask, dy, blur, alpha):
+    sh = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    sh.paste((0, 0, 0, alpha), (0, int(dy)), mask)
+    img.alpha_composite(sh.filter(ImageFilter.GaussianBlur(int(blur))))
+
+
+def background():
+    img = vgrad(S, S, BG_TOP, BG_LOW).convert("RGBA")
     g = Image.radial_gradient("L").resize((int(S * 2.2), int(S * 2.2)), LANCZOS)
     glow_a = Image.new("L", (S, S), 0)
-    glow_a.paste(g, (int(S * 0.5 - g.width / 2), int(S * 0.26 - g.height / 2)))
-    glow_a = glow_a.point(lambda v: int(v * 0.50))
-    img = Image.composite(Image.new("RGBA", (S, S), GLOW + (255,)), img, glow_a)
-
-    d = ImageDraw.Draw(img)
-    cx = cy = S / 2
-    for fx, fy, rr, a in STARS:
-        x = cx + (fx * S - cx) * scale
-        y = cy + (fy * S - cy) * scale
-        d.ellipse([x - rr, y - rr, x + rr, y + rr], fill=(255, 255, 255, a))
-    return img
+    glow_a.paste(g, (int(S * 0.5 - g.width / 2), int(S * 0.2 - g.height / 2)))
+    glow_a = glow_a.point(lambda v: int(v * 0.40))
+    return Image.composite(Image.new("RGBA", (S, S), GLOW + (255,)), img, glow_a)
 
 
-def draw_tile(img, scale):
-    cx = cy = S / 2
-    tw = S * TILE * scale
-    x0, y0 = cx - tw / 2, cy - tw / 2
-    x1, y1 = x0 + tw, y0 + tw
-    rad = tw * TILE_RADIUS
-
-    shape = Image.new("L", (S, S), 0)
-    ImageDraw.Draw(shape).rounded_rectangle([x0, y0, x1, y1], radius=rad, fill=255)
-
-    sh = Image.new("RGBA", (S, S), (0, 0, 0, 0))
-    sh.paste((0, 0, 0, 140), (0, int(S * 0.015)), shape)
-    sh = sh.filter(ImageFilter.GaussianBlur(int(S * 0.03)))
-    img.alpha_composite(sh)
-
-    grad = vgrad(int(tw), int(tw), Y_TOP, Y_BOT).convert("RGBA")
-    tile_mask = Image.new("L", (S, S), 0)
-    ImageDraw.Draw(tile_mask).rounded_rectangle([x0, y0, x1, y1], radius=rad, fill=255)
-    canvas = Image.new("RGBA", (S, S), (0, 0, 0, 0))
-    canvas.paste(grad, (int(x0), int(y0)))
-    img.paste(canvas, (0, 0), tile_mask)
-
-    d = ImageDraw.Draw(img)
-    d.rounded_rectangle([x0, y0, x1, y1], radius=rad, outline=Y_RIM + (170,), width=int(S * 0.006))
-    # reflet doux en haut de la tuile
-    gloss = Image.new("RGBA", (S, S), (0, 0, 0, 0))
-    ImageDraw.Draw(gloss).rounded_rectangle(
-        [x0 + tw * 0.10, y0 + tw * 0.08, x1 - tw * 0.10, y0 + tw * 0.30],
-        radius=rad * 0.6, fill=(255, 255, 255, 32))
-    img.alpha_composite(gloss.filter(ImageFilter.GaussianBlur(int(S * 0.006))))
-    return (x0, y0, x1, y1)
+def paint_cell(img, box, c1, c2, seed):
+    x0, y0, x1, y1 = [int(v) for v in box]
+    w, h = x1 - x0, y1 - y0
+    tile = Image.new("RGBA", (w, h), c1 + (255,))
+    if c2:                                    # Alliance : coupee en diagonale
+        ImageDraw.Draw(tile).polygon([(w, 0), (w, h), (0, h)], fill=c2 + (255,))
+    # bois peint : le grain transparait
+    g = grain(w, h, seed).point(lambda v: 150 + v * 105 // 255)
+    tile = ImageChops.multiply(tile, Image.merge("RGBA", (g, g, g, Image.new("L", (w, h), 255))))
+    radius = w * 0.12
+    m = Image.new("L", (w, h), 0)
+    ImageDraw.Draw(m).rounded_rectangle([0, 0, w - 1, h - 1], radius=radius, fill=255)
+    img.paste(tile, (x0, y0), m)
+    if not c2:                                # Maison : liseré d'or
+        stroke(img, "rounded_rectangle", [x0, y0, x1 - 1, y1 - 1], radius=radius, outline=GOLD + (255,), width=max(2, int(w * 0.06)))
+    else:
+        stroke(img, "rounded_rectangle", [x0, y0, x1 - 1, y1 - 1], radius=radius, outline=(0, 0, 0, 110), width=max(1, int(w * 0.015)))
 
 
-def draw_glyph(img, box):
-    x0, y0, x1, y1 = box
-    tw = x1 - x0
-    try:
-        fnt = ImageFont.truetype(_font(), int(tw * GLYPH_SCALE))
-        try:
-            fnt.set_variation_by_axes([900])
-        except Exception:
-            pass
-    except SystemExit:
-        raise
-    except Exception:
-        fnt = ImageFont.load_default()       # repli : icone quand meme generee
-    d = ImageDraw.Draw(img)
-    tb = d.textbbox((0, 0), GLYPH, font=fnt)
-    d.text(((x0 + x1) / 2 - (tb[2] - tb[0]) / 2 - tb[0],
-            (y0 + y1) / 2 - (tb[3] - tb[1]) / 2 - tb[1]),
-           GLYPH, font=fnt, fill=INK + (255,))
+def piece(img, cx, cy, r, colors, seed):
+    box = [cx - r, cy - r, cx + r, cy + r]
+    m = Image.new("L", (S, S), 0)
+    ImageDraw.Draw(m).ellipse(box, fill=255)
+    shadow(img, m, r * 0.10, r * 0.12, 170)
+
+    disc = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    wd = wood(int(2 * r) + 2, int(2 * r) + 2, colors[0], colors[1], seed, angle=-18)
+    disc.paste(wd, (int(cx - r), int(cy - r)))
+    # volume : reflet en haut a gauche, ombre en bas a droite
+    shade = Image.new("L", (S, S), 0)
+    ImageDraw.Draw(shade).ellipse([cx - r * 0.95, cy - r * 0.95, cx + r * 0.75, cy + r * 0.75], fill=255)
+    shade = shade.filter(ImageFilter.GaussianBlur(int(r * 0.35)))
+    dark = Image.new("RGBA", (S, S), (0, 0, 0, 255))
+    disc = Image.composite(disc, Image.blend(disc, dark, 0.45), shade)
+    hl = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    ImageDraw.Draw(hl).ellipse([cx - r * 0.62, cy - r * 0.70, cx + r * 0.05, cy - r * 0.18], fill=(255, 255, 255, 70))
+    disc.alpha_composite(hl.filter(ImageFilter.GaussianBlur(int(r * 0.14))))
+    img.paste(disc, (0, 0), m)
+    stroke(img, "ellipse", box, outline=(0, 0, 0, 120), width=max(2, int(r * 0.035)))
+
+
+def draw_board(img, scale):
+    bw = S * 0.80 * scale
+    x0, y0 = (S - bw) / 2, (S - bw) / 2
+    x1, y1 = x0 + bw, y0 + bw
+    radius = bw * 0.11
+    frame_mask = rrect_mask([x0, y0, x1, y1], radius)
+    shadow(img, frame_mask, S * 0.02, S * 0.035, 180)
+
+    fr = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    fr.paste(wood(int(bw) + 2, int(bw) + 2, FRAME[0], FRAME[1], 7, angle=8), (int(x0), int(y0)))
+    img.paste(fr, (0, 0), frame_mask)
+    stroke(img, "rounded_rectangle", [x0, y0, x1, y1], radius=radius, outline=(156, 116, 34, 255), width=max(3, int(bw * 0.018)))
+
+    pad = bw * 0.085
+    gap = bw * 0.045
+    cw = (bw - 2 * pad - gap) / 2
+    for k, (c1, c2, p) in enumerate(CELLS):
+        r, c = divmod(k, 2)
+        cx0 = x0 + pad + c * (cw + gap)
+        cy0 = y0 + pad + r * (cw + gap)
+        paint_cell(img, (cx0, cy0, cx0 + cw, cy0 + cw), c1, c2, 20 + k)
+        if p:
+            piece(img, cx0 + cw / 2, cy0 + cw / 2, cw * 0.38, MAPLE if p == 1 else WALNUT, 40 + k)
 
 
 def compose(size, maskable=False, opaque=False):
-    scale = 0.68 if maskable else 1.0
-    img = background(scale)
-    box = draw_tile(img, scale)
-    draw_glyph(img, box)
+    img = background()
+    draw_board(img, 0.74 if maskable else 1.0)
 
     if not maskable and not opaque:
         mask = Image.new("L", (S, S), 0)
@@ -163,7 +200,7 @@ def compose(size, maskable=False, opaque=False):
 
     img = img.resize((size, size), LANCZOS)
     if opaque:
-        out = Image.new("RGB", img.size, BASE_LOW)
+        out = Image.new("RGB", img.size, BG_LOW)
         out.paste(img, (0, 0), img)
         return out
     return img

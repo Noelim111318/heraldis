@@ -25,8 +25,6 @@
 
   --gold: #E8B84A;
   --gold-deep: #9C7422;
-  --light-piece: #F4EEDC;
-  --dark-piece: #22242E;
   --bw: min(calc(100vw - 32px), 470px);        /* largeur du plateau */
 }
 
@@ -118,8 +116,8 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
 .toggle input { width: 20px; height: 20px; accent-color: var(--gold); flex: none; }
 
 .dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; flex: none; vertical-align: -2px; }
-.dot--light { background: radial-gradient(circle at 35% 30%, #fff, var(--light-piece) 55%, #BDB293); box-shadow: 0 0 0 1px rgba(0,0,0,.4); }
-.dot--dark { background: radial-gradient(circle at 35% 30%, #666A7E, var(--dark-piece) 55%, #0B0C10); box-shadow: 0 0 0 1px rgba(255,255,255,.35); }
+.dot--light { background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.6), transparent 50%), var(--maple); box-shadow: 0 0 0 1px rgba(0,0,0,.45); }
+.dot--dark { background: radial-gradient(circle at 35% 30%, rgba(255,225,190,.3), transparent 50%), var(--walnut); box-shadow: 0 0 0 1px rgba(255,255,255,.3); }
 
 /* -------------------------------------------------------------- Joueurs */
 .players { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
@@ -145,27 +143,45 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
 .ai-info { font-size: 0.72rem; color: var(--ink-dim); text-align: center; min-height: 1em; margin-top: -8px; }
 
 /* -------------------------------------------------------------- Plateau */
+/* Bois : grain procedural (SVG feTurbulence etire -> fibres), sans fichier
+   image, donc disponible hors-ligne. --grain-dark : veines sombres (bois
+   clair, cases peintes, cadre) ; --grain-light : veines claires (noyer). */
+:root {
+  --grain-dark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.006 0.11' numOctaves='4' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.16 0 0 0 0 0.08 0 0 0 0 0.02 2.4 0 0 0 -0.95'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
+  --grain-light: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.006 0.11' numOctaves='4' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.78 0 0 0 0 0.56 0 0 0 0 0.36 2.2 0 0 0 -0.95'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
+  --grain-soft: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.008 0.16' numOctaves='3' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.12 0 0 0 0 0.06 0 0 0 0 0.02 1.5 0 0 0 -0.6'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
+  --maple: linear-gradient(135deg, #F4DEB2, #DDB67E 55%, #C29458);
+  --walnut: linear-gradient(135deg, #6E4629, #432817 55%, #22140B);
+}
+
 .board-wrap { width: var(--bw); }
 .board {
   --gap: 5px;
   display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--gap);
-  width: 100%; aspect-ratio: 1; padding: 8px;
-  background: linear-gradient(145deg, #3A2C14, #1E170C);
+  width: 100%; aspect-ratio: 1; padding: 9px;
+  background:
+    var(--grain-dark) 0 0 / 280px 280px,
+    linear-gradient(160deg, #84532F, #5C361C 55%, #40240F);
   border: 3px solid var(--gold-deep); border-radius: 16px;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 220, 140, 0.15);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55),
+    inset 0 2px 0 rgba(255, 220, 160, 0.18), inset 0 -3px 6px rgba(0, 0, 0, 0.35);
 }
 .cell {
   position: relative; border: none; border-radius: 9px; padding: 0;
   background: var(--c1); overflow: hidden; cursor: default; color: inherit;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), inset 0 2px 5px rgba(0, 0, 0, 0.35);
 }
 .cell--alliance { background: linear-gradient(135deg, var(--c1) 0 50%, var(--c2) 50% 100%); }
 .cell--house { box-shadow: inset 0 0 0 3px var(--gold), inset 0 0 12px rgba(0, 0, 0, 0.45); }
-.cell::before {                                   /* voile pour adoucir les couleurs */
-  content: ''; position: absolute; inset: 0; background: rgba(12, 14, 26, 0.28); pointer-events: none;
+.cell::before {                                   /* bois peint : le grain transparait */
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background:
+    var(--grain-soft) var(--gx, 0) var(--gy, 0) / 200px 200px,
+    rgba(12, 14, 26, 0.18);
+  opacity: 0.75;
 }
-.sym {
-  position: absolute; z-index: 2; line-height: 1; pointer-events: none;
+.sym {                                            /* sous les pions, comme sur un vrai plateau */
+  position: absolute; z-index: 1; line-height: 1; pointer-events: none;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
 }
 .cell--house .sym { font-size: calc(var(--bw) * 0.085); top: 50%; left: 50%; transform: translate(-50%, -50%); }
@@ -173,19 +189,33 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
 .cell--alliance .sym:nth-of-type(1) { top: 8%; left: 8%; }
 .cell--alliance .sym:nth-of-type(2) { bottom: 8%; right: 8%; }
 
+/* Pion en bois tourne : fond = teinte, ::before = fil du bois (oriente au
+   hasard par pion, --rot), ::after = volume (reflet + bord plus sombre). */
 .piece {
-  position: absolute; z-index: 1; top: 50%; left: 50%; width: 74%; height: 74%;
-  border-radius: 50%; transform: translate(-50%, -50%);
+  position: absolute; z-index: 2; top: 50%; left: 50%; width: 76%; height: 76%;
+  border-radius: 50%; transform: translate(-50%, -50%); overflow: hidden;
   animation: drop 0.22s ease-out;
 }
+.piece::before, .piece::after { content: ''; position: absolute; border-radius: 50%; pointer-events: none; }
+.piece::before { inset: -20%; transform: rotate(var(--rot, 0deg)); background-size: 110px 110px; }
+.piece::after {
+  inset: 0;
+  background:
+    radial-gradient(ellipse 45% 32% at 36% 30%, rgba(255, 255, 255, var(--shine)), transparent 70%),
+    radial-gradient(circle at 42% 38%, transparent 55%, rgba(0, 0, 0, 0.38) 100%);
+}
 .piece--1 {
-  background: radial-gradient(circle at 35% 30%, #FFFFFF, var(--light-piece) 50%, #B9AD8D);
-  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.6), inset 0 -3px 5px rgba(0, 0, 0, 0.18);
+  --shine: 0.5;
+  background: var(--maple);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(70, 40, 10, 0.55);
 }
+.piece--1::before { background-image: var(--grain-soft); opacity: 0.8; }
 .piece--2 {
-  background: radial-gradient(circle at 35% 30%, #6A6E82, var(--dark-piece) 52%, #08090D);
-  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.7), inset 0 0 0 2px rgba(255, 255, 255, 0.16);
+  --shine: 0.22;
+  background: var(--walnut);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(0, 0, 0, 0.7);
 }
+.piece--2::before { background-image: var(--grain-light); opacity: 0.3; }
 @keyframes drop {
   0% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
   100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
@@ -252,7 +282,7 @@ body.show-coords .cell--alliance .sym:nth-of-type(2) { bottom: 10%; }
 }
 .lg { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; }
 .lg--house { box-shadow: inset 0 0 0 2px var(--gold); background: var(--card); }
-.lg--cap { border-radius: 50%; box-shadow: 0 0 0 2px var(--red); background: var(--dark-piece); }
+.lg--cap { border-radius: 50%; box-shadow: 0 0 0 2px var(--red); background: var(--walnut); }
 
 .log { width: 100%; font-size: 0.85rem; color: var(--ink-soft); }
 .log summary { cursor: pointer; font-weight: 800; color: var(--ink-dim); text-align: center; padding: 6px; }

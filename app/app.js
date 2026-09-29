@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  var APP_VERSION = 'v1.0.0';
+  var APP_VERSION = 'v1.1.0';
   var E = window.AppEngine;
   var D = window.HERALDIS_DATA;
   var G = window.HeraldisGame;
@@ -67,6 +67,8 @@
       var h1 = D.houses[c.syms[0]], h2 = D.houses[c.syms[c.syms.length - 1]];
       b.style.setProperty('--c1', h1.color);
       b.style.setProperty('--c2', h2.color);
+      b.style.setProperty('--gx', (c.i * 53 % 220) + 'px');     // chaque case a son propre veinage
+      b.style.setProperty('--gy', (c.i * 97 % 220) + 'px');
       c.syms.forEach(function (k) {
         var s = document.createElement('span');
         s.className = 'sym';
@@ -343,6 +345,7 @@
         if (v) {
           var pc = document.createElement('span');
           pc.className = 'piece piece--' + v;
+          pc.style.setProperty('--rot', Math.floor(Math.random() * 180) + 'deg');   // fil du bois propre a chaque pion
           el.insertBefore(pc, el.firstChild);
         }
         shownPieces[i] = v;
