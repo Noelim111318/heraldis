@@ -173,7 +173,13 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
 
 .board-wrap { width: var(--bw); }
 .board {
-  --gap: 5px;
+  --gap: 6px;
+  /* Cases creusees dans le bois : ombre portee par le bord superieur, reflet
+     sur le bord inferieur (--recess, dessine sur ::before, sous les pions) et
+     arete du plateau autour de la cavite (--lip). */
+  --recess: inset 0 5px 8px -1px rgba(0, 0, 0, 0.72), inset 0 -2px 3px rgba(255, 225, 180, 0.18),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.55);
+  --lip: 0 1px 1px rgba(255, 225, 170, 0.35), 0 -1px 1px rgba(0, 0, 0, 0.55);
   display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--gap);
   width: 100%; aspect-ratio: 1; padding: 9px;
   background:
@@ -186,16 +192,17 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
 .cell {
   position: relative; border: none; border-radius: 9px; padding: 0;
   background: var(--c1); overflow: hidden; cursor: default; color: inherit;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), inset 0 2px 5px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--lip);
 }
 .cell--alliance { background: linear-gradient(135deg, var(--c1) 0 50%, var(--c2) 50% 100%); }
-.cell--house { box-shadow: inset 0 0 0 3px var(--gold), inset 0 0 12px rgba(0, 0, 0, 0.45); }
+.cell--house { box-shadow: inset 0 0 0 3px var(--gold), var(--lip); }
 .cell::before {                                   /* bois peint : le grain transparait */
   content: ''; position: absolute; inset: 0; pointer-events: none;
   background:
     var(--grain-soft) var(--gx, 0) var(--gy, 0) / 200px 200px,
-    rgba(12, 14, 26, 0.18);
-  opacity: 0.75;
+    rgba(12, 14, 26, 0.14);
+  border-radius: inherit;
+  box-shadow: var(--recess);
 }
 /* Emblemes des Maisons (crests/*.png, dessin fourni) : la silhouette sert de
    masque, la couleur vient de `background`. */
@@ -261,8 +268,7 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
   background: rgba(255, 255, 255, 0.55); box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.25), 0 0 6px rgba(255, 255, 255, 0.4);
 }
 @media (hover: hover) and (pointer: fine) {
-  .cell.is-playable:hover { box-shadow: inset 0 0 0 3px #fff; }
-  .cell--house.is-playable:hover { box-shadow: inset 0 0 0 3px #fff; }
+  .cell.is-playable:hover { box-shadow: inset 0 0 0 3px #fff, var(--lip); }
 }
 .board.hints .cell.is-capturable .piece { box-shadow: 0 0 0 3px var(--red), 0 0 14px var(--red); animation: pulse 1.4s ease-in-out infinite; }
 .board.hints .cell.is-capturable::after {
@@ -271,7 +277,8 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
 }
 .cell.is-locked { cursor: not-allowed; }
 .cell.is-locked::before { background: rgba(8, 9, 16, 0.62); }
-.cell.is-last { outline: 3px solid var(--gold); outline-offset: -3px; }
+/* Dernier coup : anneau blanc sur le pion (l'or est reserve aux Maisons). */
+.cell.is-last .piece { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6), 0 0 0 3px #FFF, 0 0 14px 3px rgba(255, 255, 255, 0.55); }
 .cell.is-win { animation: winGlow 1s ease-in-out infinite alternate; outline: 3px solid var(--green); outline-offset: -3px; }
 .cell.is-hint { outline: 4px solid var(--blue); outline-offset: -4px; animation: pulseHint 1s ease-in-out infinite; }
 .truce {
@@ -315,6 +322,7 @@ body.show-coords .cell--alliance .sym:nth-of-type(2) { bottom: 8%; }
 }
 .lg { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; }
 .lg--house { box-shadow: inset 0 0 0 2px var(--gold); background: var(--card); }
+.lg--last { border-radius: 50%; box-shadow: 0 0 0 2px #FFF, 0 0 6px #FFF; background: var(--maple); }
 .lg--cap { border-radius: 50%; box-shadow: 0 0 0 2px var(--red); background: var(--walnut); }
 
 .log { width: 100%; font-size: 0.85rem; color: var(--ink-soft); }

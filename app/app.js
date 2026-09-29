@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  var APP_VERSION = 'v1.3.0';
+  var APP_VERSION = 'v1.4.0';
   var E = window.AppEngine;
   var D = window.HERALDIS_DATA;
   var G = window.HeraldisGame;
