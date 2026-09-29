@@ -8,7 +8,7 @@
  *     puis ajoute tout nouveau fichier statique a APP_SHELL ci-dessous.
  */
 self.APP_SLUG = 'heraldis';
-self.APP_VERSION = 'v1.1.0';
+self.APP_VERSION = 'v1.2.0';
 
 self.APP_SHELL = [
   './',
@@ -21,6 +21,11 @@ self.APP_SHELL = [
   './ai-worker.js',
   './manifest.json',
   './favicon.ico',
+  './crests/loup.png',
+  './crests/aigle.png',
+  './crests/ours.png',
+  './crests/cerf.png',
+  './crests/sanglier.png',
   './diag.html',
   './engine/engine.js',
   './engine/diag.js',

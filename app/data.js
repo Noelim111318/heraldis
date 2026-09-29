@@ -10,13 +10,14 @@
   var DATA = {
     title: 'Heraldis',
 
-    // Les cinq Maisons Fondatrices. `key` sert dans BOARD ci-dessous.
+    // Les cinq Maisons Fondatrices. `key` sert dans BOARD ci-dessous ;
+    // `crest` = embleme crests/<crest>.png (silhouette, teintee en CSS).
     houses: [
-      { key: 'L', name: 'Loup',     icon: '🐺', color: '#5E7398' },
-      { key: 'A', name: 'Aigle',    icon: '🦅', color: '#C9962E' },
-      { key: 'O', name: 'Ours',     icon: '🐻', color: '#86573A' },
-      { key: 'C', name: 'Cerf',     icon: '🦌', color: '#4A8458' },
-      { key: 'S', name: 'Sanglier', icon: '🐗', color: '#A0413C' },
+      { key: 'L', name: 'Loup',     crest: 'loup', color: '#5E7398' },
+      { key: 'A', name: 'Aigle',    crest: 'aigle', color: '#C9962E' },
+      { key: 'O', name: 'Ours',     crest: 'ours', color: '#86573A' },
+      { key: 'C', name: 'Cerf',     crest: 'cerf', color: '#4A8458' },
+      { key: 'S', name: 'Sanglier', crest: 'sanglier', color: '#A0413C' },
     ],
 
     // Plateau 5x5, ligne par ligne (regles §2). 1 lettre = Maison Fondatrice,

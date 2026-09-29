@@ -133,9 +133,9 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
 .player-reserve { font-size: 0.8rem; color: var(--ink-soft); font-weight: 700; margin-top: 2px; }
 .player-reserve span { font-weight: 900; color: var(--ink); font-size: 1rem; }
 .player-reserve.is-empty span { color: var(--red); }
-.player-houses { display: flex; gap: 2px; margin-top: 4px; font-size: 1.05rem; }
-.player-houses span { filter: grayscale(1); opacity: 0.22; transition: opacity .2s ease, filter .2s ease; }
-.player-houses span.on { filter: none; opacity: 1; }
+.player-houses { display: flex; gap: 4px; margin-top: 5px; font-size: 1.45rem; }
+.player-houses .crest { background: var(--ink-dim); opacity: 0.22; transition: opacity .2s ease, background-color .2s ease; }
+.player-houses .crest.on { background: color-mix(in srgb, var(--hc) 55%, #FFF3DC); opacity: 1; }
 
 .status { min-height: 1.4em; font-weight: 800; text-align: center; color: var(--ink); }
 .status .thinking::after { content: '…'; animation: blink 1s steps(2) infinite; }
@@ -180,14 +180,30 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
     rgba(12, 14, 26, 0.18);
   opacity: 0.75;
 }
+/* Emblemes des Maisons (crests/*.png, dessin fourni) : la silhouette sert de
+   masque, la couleur vient de `background`. */
+.crest {
+  display: inline-block; width: 1em; height: 1em; flex: none;
+  background: var(--crest-ink, #F5EAD2);
+  -webkit-mask: var(--crest) center / contain no-repeat;
+  mask: var(--crest) center / contain no-repeat;
+}
+.crest--loup { --crest: url(crests/loup.png); }
+.crest--aigle { --crest: url(crests/aigle.png); }
+.crest--ours { --crest: url(crests/ours.png); }
+.crest--cerf { --crest: url(crests/cerf.png); }
+.crest--sanglier { --crest: url(crests/sanglier.png); }
+.crest--inline { width: 1.35em; height: 1.35em; vertical-align: -0.35em; background: var(--gold); }
+
 .sym {                                            /* sous les pions, comme sur un vrai plateau */
   position: absolute; z-index: 1; line-height: 1; pointer-events: none;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
 }
-.cell--house .sym { font-size: calc(var(--bw) * 0.085); top: 50%; left: 50%; transform: translate(-50%, -50%); }
-.cell--alliance .sym { font-size: calc(var(--bw) * 0.056); }
-.cell--alliance .sym:nth-of-type(1) { top: 8%; left: 8%; }
-.cell--alliance .sym:nth-of-type(2) { bottom: 8%; right: 8%; }
+.sym .crest { display: block; }
+.cell--house .sym { font-size: calc(var(--bw) * 0.125); top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.cell--alliance .sym { font-size: calc(var(--bw) * 0.074); }
+.cell--alliance .sym:nth-of-type(1) { top: 5%; left: 5%; }
+.cell--alliance .sym:nth-of-type(2) { bottom: 5%; right: 5%; }
 
 /* Pion en bois tourne : fond = teinte, ::before = fil du bois (oriente au
    hasard par pion, --rot), ::after = volume (reflet + bord plus sombre). */
@@ -224,8 +240,8 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
 .cell.is-playable { cursor: pointer; }
 .board.hints .cell.is-playable:not(.has-piece)::after {
   content: ''; position: absolute; z-index: 1; top: 50%; left: 50%;
-  width: 18%; height: 18%; border-radius: 50%; transform: translate(-50%, -50%);
-  background: rgba(255, 255, 255, 0.45); box-shadow: 0 0 6px rgba(255, 255, 255, 0.5);
+  width: 11%; height: 11%; border-radius: 50%; transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.55); box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.25), 0 0 6px rgba(255, 255, 255, 0.4);
 }
 @media (hover: hover) and (pointer: fine) {
   .cell.is-playable:hover { box-shadow: inset 0 0 0 3px #fff; }
@@ -250,7 +266,7 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
   font-size: 0.6rem; font-weight: 900; color: rgba(255, 255, 255, 0.75); text-shadow: 0 1px 2px #000;
 }
 body.show-coords .coord { display: block; }
-body.show-coords .cell--alliance .sym:nth-of-type(2) { bottom: 10%; }
+body.show-coords .cell--alliance .sym:nth-of-type(2) { bottom: 8%; }
 
 @keyframes pulse {
   0%, 100% { box-shadow: 0 0 0 3px var(--red), 0 0 6px var(--red); }
@@ -309,7 +325,7 @@ body.show-coords .cell--alliance .sym:nth-of-type(2) { bottom: 10%; }
 
 @media (max-width: 380px) {
   .player { padding: 6px 8px; }
-  .player-houses { font-size: 0.9rem; }
+  .player-houses { font-size: 1.2rem; gap: 2px; }
   .seg span { font-size: 0.8rem; padding: 8px 4px; }
 }
 @media (min-width: 520px) {

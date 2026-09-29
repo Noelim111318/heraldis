@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  var APP_VERSION = 'v1.1.0';
+  var APP_VERSION = 'v1.2.0';
   var E = window.AppEngine;
   var D = window.HERALDIS_DATA;
   var G = window.HeraldisGame;
@@ -55,6 +55,14 @@
   }
 
   /* ------------------------------------------------------------ Plateau */
+  // Embleme d'une Maison : silhouette PNG utilisee comme masque (couleur en CSS).
+  function crest(k) {
+    var e = document.createElement('span');
+    e.className = 'crest crest--' + D.houses[k].crest;
+    e.setAttribute('aria-hidden', 'true');
+    return e;
+  }
+
   // Construit les 25 cases (une seule fois). interactive=false : plateau des regles.
   function buildBoard(el, interactive) {
     el.textContent = '';
@@ -72,7 +80,7 @@
       c.syms.forEach(function (k) {
         var s = document.createElement('span');
         s.className = 'sym';
-        s.textContent = D.houses[k].icon;
+        s.appendChild(crest(k));
         b.appendChild(s);
       });
       var co = document.createElement('span');
@@ -92,10 +100,10 @@
   // Houses possedees : 5 symboles par joueur.
   [1, 2].forEach(function (p) {
     var box = pid('houses', p);
-    D.houses.forEach(function (h) {
-      var s = document.createElement('span');
-      s.textContent = h.icon;
+    D.houses.forEach(function (h, k) {
+      var s = crest(k);
       s.title = h.name;
+      s.style.setProperty('--hc', h.color);
       box.appendChild(s);
     });
   });
@@ -312,7 +320,7 @@
     if (v && i === s.truce) return 'Trêve : vous ne pouvez pas reprendre immédiatement cette case.';
     if (v) {
       var missing = c.syms.filter(function (k) { return !(s.hmask[p] & (1 << k)); })
-        .map(function (k) { return D.houses[k].icon + ' ' + D.houses[k].name; });
+        .map(function (k) { return D.houses[k].name; });
       return 'Pour capturer cette Alliance, il vous faut une Maison ' + missing.join(' et une Maison ') + '.';
     }
     return 'Coup impossible.';

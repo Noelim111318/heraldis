@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Genere les icones PWA de Heraldis : un coin de plateau en bois (2 x 2 cases,
 deux Alliances bicolores et deux Maisons bordees d'or) avec un pion clair
-(erable) et un pion fonce (noyer), sur le fond nuit de l'app.
+(erable) et un pion fonce (noyer), sur le fond nuit de l'app. Les emblemes
+des Maisons viennent de crests/*.png (sous les pions, comme en jeu).
 
 Sorties (a la racine du projet) :
     icons/icon-192.png
@@ -47,10 +48,13 @@ WALNUT = ((22, 12, 7), (92, 58, 34))         # pion fonce
 
 LOUP, AIGLE, OURS, CERF, SANGLIER = (94, 115, 152), (201, 150, 46), (134, 87, 58), (74, 132, 88), (160, 65, 60)
 
-# 2 x 2 cases : (couleur 1, couleur 2 ou None = Maison, pion 0/1/2)
+CREAM = (245, 234, 210)                      # couleur des emblemes
+CRESTS = os.path.join(ROOT, "crests")        # silhouettes (crests/<nom>.png)
+
+# 2 x 2 cases : (couleur 1, couleur 2 ou None = Maison, pion 0/1/2, emblemes)
 CELLS = [
-    (LOUP, AIGLE, 1), (CERF, None, 0),
-    (OURS, SANGLIER, 0), (SANGLIER, None, 2),
+    (LOUP, AIGLE, 1, ("loup", "aigle")), (CERF, None, 0, ("cerf",)),
+    (OURS, SANGLIER, 0, ("ours", "sanglier")), (SANGLIER, None, 2, ("sanglier",)),
 ]
 
 
@@ -123,7 +127,22 @@ def background():
     return Image.composite(Image.new("RGBA", (S, S), GLOW + (255,)), img, glow_a)
 
 
-def paint_cell(img, box, c1, c2, seed):
+def put_crest(img, name, cx, cy, size):
+    """Pose un embleme creme centre en (cx, cy)."""
+    path = os.path.join(CRESTS, name + ".png")
+    if not os.path.exists(path):
+        return
+    a = Image.open(path).getchannel("A").resize((int(size), int(size)), LANCZOS)
+    layer = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    x, y = int(cx - size / 2), int(cy - size / 2)
+    sh = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    sh.paste((0, 0, 0, 120), (x, y + max(1, int(size * 0.03))), a)
+    img.alpha_composite(sh.filter(ImageFilter.GaussianBlur(max(1, int(size * 0.02)))))
+    layer.paste(CREAM + (255,), (x, y), a)
+    img.alpha_composite(layer)
+
+
+def paint_cell(img, box, c1, c2, seed, crests=()):
     x0, y0, x1, y1 = [int(v) for v in box]
     w, h = x1 - x0, y1 - y0
     tile = Image.new("RGBA", (w, h), c1 + (255,))
@@ -136,6 +155,11 @@ def paint_cell(img, box, c1, c2, seed):
     m = Image.new("L", (w, h), 0)
     ImageDraw.Draw(m).rounded_rectangle([0, 0, w - 1, h - 1], radius=radius, fill=255)
     img.paste(tile, (x0, y0), m)
+    if len(crests) == 1:                      # Maison : embleme au centre
+        put_crest(img, crests[0], x0 + w / 2, y0 + h / 2, w * 0.66)
+    elif len(crests) == 2:                    # Alliance : un embleme par moitie
+        put_crest(img, crests[0], x0 + w * 0.29, y0 + h * 0.29, w * 0.46)
+        put_crest(img, crests[1], x0 + w * 0.71, y0 + h * 0.71, w * 0.46)
     if not c2:                                # Maison : liseré d'or
         stroke(img, "rounded_rectangle", [x0, y0, x1 - 1, y1 - 1], radius=radius, outline=GOLD + (255,), width=max(2, int(w * 0.06)))
     else:
@@ -180,11 +204,11 @@ def draw_board(img, scale):
     pad = bw * 0.085
     gap = bw * 0.045
     cw = (bw - 2 * pad - gap) / 2
-    for k, (c1, c2, p) in enumerate(CELLS):
+    for k, (c1, c2, p, crests) in enumerate(CELLS):
         r, c = divmod(k, 2)
         cx0 = x0 + pad + c * (cw + gap)
         cy0 = y0 + pad + r * (cw + gap)
-        paint_cell(img, (cx0, cy0, cx0 + cw, cy0 + cw), c1, c2, 20 + k)
+        paint_cell(img, (cx0, cy0, cx0 + cw, cy0 + cw), c1, c2, 20 + k, crests)
         if p:
             piece(img, cx0 + cw / 2, cy0 + cw / 2, cw * 0.38, MAPLE if p == 1 else WALNUT, 40 + k)
 

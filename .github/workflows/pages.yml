@@ -20,8 +20,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
       - name: Tests (regles + IA)
@@ -30,7 +30,7 @@ jobs:
         run: bash app/tools/check-app.sh app
       - name: Site = app/ sans les outils ni la doc
         run: rsync -a --exclude tools --exclude '*.md' --exclude .gitignore app/ _site/
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: _site
 
