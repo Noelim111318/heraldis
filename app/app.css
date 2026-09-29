@@ -77,10 +77,10 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
 .field-note { color: var(--ink-soft); font-size: 0.9rem; margin-top: 12px; }
 
 .seg { display: flex; gap: 6px; flex-wrap: wrap; }
-.seg label { flex: 1 1 0; min-width: 0; }
+.seg label { flex: 1 1 0; min-width: 0; display: flex; }       /* le bouton remplit toute la hauteur de la rangee */
 .seg input { position: absolute; opacity: 0; pointer-events: none; }
 .seg span {
-  display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap;
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap;
   padding: 10px 8px; border-radius: 12px; cursor: pointer; text-align: center;
   background: var(--bg); border: 2px solid var(--card-border);
   font-weight: 800; font-size: 0.88rem; line-height: 1.15; min-height: 44px;
