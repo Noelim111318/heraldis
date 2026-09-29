@@ -11,6 +11,12 @@ Sanglier).
 
 ## Jouer
 
+**En ligne : https://noelim111318.github.io/heraldis/** (installable sur mobile
+via « Ajouter à l'écran d'accueil »). Publiée automatiquement à chaque push sur
+`main` (`.github/workflows/pages.yml`).
+
+En local :
+
 ```
 cd app
 python3 -m http.server 8000   # puis http://localhost:8000

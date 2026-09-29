@@ -4,3 +4,6 @@ desktop.ini
 *.swp
 *~
 node_modules/
+
+# Version des regles avec les notes de conception : reste locale, jamais publiee
+*_PRIVE.md

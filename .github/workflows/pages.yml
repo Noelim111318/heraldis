@@ -1,0 +1,45 @@
+# Verifie puis publie l'application (dossier app/) sur GitHub Pages
+# a chaque push sur main.  -> https://noelim111318.github.io/heraldis/
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Tests (regles + IA)
+        run: node --test app/tools/tests/*.test.js
+      - name: Controle de l'app (versions, APP_SHELL, identifiants)
+        run: bash app/tools/check-app.sh app
+      - name: Site = app/ sans les outils ni la doc
+        run: rsync -a --exclude tools --exclude '*.md' --exclude .gitignore app/ _site/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
