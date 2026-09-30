@@ -132,7 +132,7 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
 .toggle { display: flex; align-items: center; gap: 10px; padding: 7px 0; cursor: pointer; font-weight: 700; font-size: 0.92rem; }
 .toggle input { width: 20px; height: 20px; accent-color: var(--gold); flex: none; }
 
-.dot { display: inline-block; width: 16px; height: 19px; flex: none; vertical-align: -4px; }   /* mini-pion (sprite) */
+.dot { display: inline-block; width: 17px; height: 20px; flex: none; vertical-align: -4px; }   /* mini-pion (sprite) */
 
 /* -------------------------------------------------------------- Joueurs */
 .players { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
@@ -188,7 +188,7 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
 }
 .cell {
   position: relative; border: none; border-radius: 9px; padding: 0;
-  background: var(--c1); overflow: hidden; cursor: default; color: inherit;
+  background: var(--c1); overflow: visible; cursor: default; color: inherit;
   box-shadow: var(--lip);
 }
 .cell--alliance { background: linear-gradient(135deg, var(--c1) 0 50%, var(--c2) 50% 100%); }
@@ -226,19 +226,25 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
 .cell--alliance .sym:nth-of-type(1) { top: 5%; left: 5%; }
 .cell--alliance .sym:nth-of-type(2) { bottom: 5%; right: 5%; }
 
-/* Pion en bois tourne, debout dans sa case (sprite SVG #pawn-1 / #pawn-2 dans
-   index.html). Le halo (dernier coup, capture) suit la silhouette. */
+/* Pion en bois tourne, debout (sprite SVG #pawn-1 / #pawn-2, genere par
+   tools/make-pawns.py). Son point de contact au sol (50,90 sur 100x120, soit
+   75 % de la hauteur) est au centre de la case ; la tete deborde sur la case
+   du dessus, comme sur un vrai plateau vu en perspective. Les cases du bas
+   etant plus loin dans le DOM, leurs pions passent devant : bon ordre de
+   profondeur. Seules les parties peintes captent le toucher (qui revient donc
+   a la case du pion). Le halo (dernier coup, capture) suit la silhouette. */
 .piece {
-  position: absolute; z-index: 2; left: 50%; bottom: 2%;
-  width: 74%; aspect-ratio: 100 / 120;
-  transform: translateX(-50%); pointer-events: none;
+  position: absolute; z-index: 2; left: 50%; top: 50%;
+  width: 76%; aspect-ratio: 100 / 120;
+  transform: translate(-50%, -75%); pointer-events: none;
   animation: drop 0.25s ease-out;
 }
 .piece svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.piece use { pointer-events: visiblePainted; cursor: inherit; }
 @keyframes drop {
-  0% { transform: translate(-50%, -35%); opacity: 0; }
-  70% { transform: translate(-50%, 3%); opacity: 1; }
-  100% { transform: translate(-50%, 0); opacity: 1; }
+  0% { transform: translate(-50%, -110%); opacity: 0; }
+  70% { transform: translate(-50%, -72%); opacity: 1; }
+  100% { transform: translate(-50%, -75%); opacity: 1; }
 }
 
 .cell.is-playable { cursor: pointer; }

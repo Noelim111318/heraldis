@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Heraldis</title>
   <meta name="description" content="Heraldis — jeu d&#39;alignement héraldique à 2 joueurs, contre un ami ou l&#39;ordinateur.">
-  <meta name="app-version" content="v1.5.0">
+  <meta name="app-version" content="v1.6.0">
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#0B0D19">
   <meta name="mobile-web-app-capable" content="yes">
@@ -21,74 +21,100 @@
 </head>
 <body>
 
-<!-- Pions en bois tourne (socle, corps conique, collerette, sphere), vus de
-     trois quarts. Dessines une fois ici, reutilises par <use href="#pawn-1|2">.
-     Chaque forme est peinte en entier (bois, puis volume + contour) avant la
-     suivante : c'est ce qui cache les aretes de derriere. -->
+<!-- Pions en bois tourne : genere par tools/make-pawns.py (ne pas editer a la main).
+     Bas du cone creuse d'une gorge, corps en cloche, collerette en bourrelet,
+     tete a dessus plat, vus d'en haut (55 deg). Bois mat eclaire du haut-gauche.
+     Reutilises par <use href="#pawn-1|2"> (viewBox 0 0 100 120 ; contact au sol
+     en 50,90). Chaque partie est peinte en entier (bois, volume, contour)
+     avant la suivante : c'est ce qui cache les aretes de derriere. -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
   <defs>
-    <filter id="pawn-blur" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="2.4"/></filter>
-    <!-- fil du bois vertical (le long de l'axe du pion) -->
+    <filter id="pawn-blur" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="2.6"/></filter>
+    <filter id="pw-soft" x="-30%" y="-100%" width="160%" height="300%"><feGaussianBlur stdDeviation="1.4"/></filter>
+    <!-- fil du bois vertical (le long de l'axe du pion), peu contraste : bois mat -->
     <filter id="grain-maple" x="0" y="0" width="100%" height="100%">
-      <feTurbulence type="fractalNoise" baseFrequency="0.32 0.028" numOctaves="3" seed="5"/>
-      <feColorMatrix values="0 0 0 0 0.36  0 0 0 0 0.2  0 0 0 0 0.06  2.3 0 0 0 -0.95"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.28 0.022" numOctaves="3" seed="5"/>
+      <feColorMatrix values="0 0 0 0 0.4  0 0 0 0 0.22  0 0 0 0 0.08  1.7 0 0 0 -0.72"/>
     </filter>
     <filter id="grain-walnut" x="0" y="0" width="100%" height="100%">
-      <feTurbulence type="fractalNoise" baseFrequency="0.32 0.028" numOctaves="3" seed="9"/>
-      <feColorMatrix values="0 0 0 0 0.66  0 0 0 0 0.4  0 0 0 0 0.2  2 0 0 0 -0.95"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.28 0.022" numOctaves="3" seed="9"/>
+      <feColorMatrix values="0 0 0 0 0.66  0 0 0 0 0.4  0 0 0 0 0.2  1.8 0 0 0 -0.8"/>
     </filter>
     <pattern id="wood-maple" patternUnits="userSpaceOnUse" width="100" height="120">
-      <rect width="100" height="120" fill="#E9C993"/>
+      <rect width="100" height="120" fill="#D6A96C"/>
       <rect width="100" height="120" filter="url(#grain-maple)"/>
     </pattern>
     <pattern id="wood-walnut" patternUnits="userSpaceOnUse" width="100" height="120">
-      <rect width="100" height="120" fill="#553018"/>
+      <rect width="100" height="120" fill="#5A341B"/>
       <rect width="100" height="120" filter="url(#grain-walnut)" opacity="0.5"/>
     </pattern>
-    <!-- volume : cylindre eclaire de la gauche, faces du dessus, sphere -->
-    <linearGradient id="shade-cyl">
-      <stop offset="0" stop-color="#000" stop-opacity="0.6"/>
-      <stop offset="0.3" stop-color="#FFF" stop-opacity="0.32"/>
-      <stop offset="0.48" stop-color="#FFF" stop-opacity="0"/>
-      <stop offset="0.8" stop-color="#000" stop-opacity="0.28"/>
-      <stop offset="1" stop-color="#000" stop-opacity="0.65"/>
+    <!-- volume : piece tournee eclairee du haut-gauche, sans brillance -->
+    <linearGradient id="pw-cyl">
+      <stop offset="0" stop-color="#000" stop-opacity="0.5"/>
+      <stop offset="0.2" stop-color="#FFF" stop-opacity="0.22"/>
+      <stop offset="0.36" stop-color="#FFF" stop-opacity="0.08"/>
+      <stop offset="0.56" stop-color="#000" stop-opacity="0"/>
+      <stop offset="0.82" stop-color="#000" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.62"/>
     </linearGradient>
-    <linearGradient id="shade-top" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#FFF" stop-opacity="0.3"/>
-      <stop offset="1" stop-color="#000" stop-opacity="0.1"/>
+    <linearGradient id="pw-body-ao" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#000" stop-opacity="0.3"/>
+      <stop offset="0.12" stop-color="#000" stop-opacity="0"/>
+      <stop offset="0.85" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.3"/>
     </linearGradient>
-    <radialGradient id="shade-ball" cx="0.38" cy="0.32" r="0.75">
-      <stop offset="0" stop-color="#FFF" stop-opacity="0.7"/>
-      <stop offset="0.22" stop-color="#FFF" stop-opacity="0.18"/>
-      <stop offset="0.55" stop-color="#000" stop-opacity="0"/>
-      <stop offset="1" stop-color="#000" stop-opacity="0.6"/>
+    <!-- gorge creusee : levre du haut dans l'ombre, levre du bas eclairee (le bois reste visible) -->
+    <linearGradient id="pw-groove-shade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#000" stop-opacity="0.42"/>
+      <stop offset="0.55" stop-color="#000" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#FFF" stop-opacity="0.22"/>
+    </linearGradient>
+    <!-- bourrelet : arrete claire en haut a gauche, ombre en bas -->
+    <radialGradient id="pw-torus" cx="0.42" cy="0.38" r="0.62">
+      <stop offset="0" stop-color="#000" stop-opacity="0.25"/>
+      <stop offset="0.62" stop-color="#FFF" stop-opacity="0.05"/>
+      <stop offset="0.8" stop-color="#FFF" stop-opacity="0.24"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.5"/>
+    </radialGradient>
+    <radialGradient id="pw-ball" cx="0.36" cy="0.34" r="0.8">
+      <stop offset="0" stop-color="#FFF" stop-opacity="0.34"/>
+      <stop offset="0.3" stop-color="#FFF" stop-opacity="0.08"/>
+      <stop offset="0.6" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.58"/>
     </radialGradient>
     <!-- formes -->
-    <path id="pw-base-side" d="M14 99 V106 A36 9 0 0 0 86 106 V99 Z"/>
-    <ellipse id="pw-base-top" cx="50" cy="99" rx="36" ry="9"/>
-    <path id="pw-body" d="M27 99 C36 90 43 72 44 50 H56 C57 72 64 90 73 99 A23 6 0 0 1 27 99 Z"/>
-    <path id="pw-collar-side" d="M35 49 V53 A15 5 0 0 0 65 53 V49 Z"/>
-    <ellipse id="pw-collar-top" cx="50" cy="49" rx="15" ry="5"/>
-    <circle id="pw-ball" cx="50" cy="30" r="19"/>
-    <ellipse id="pw-shadow" cx="54" cy="108" rx="40" ry="8" fill="#000" opacity="0.5" filter="url(#pawn-blur)"/>
+    <path id="pw-foot" d="M23 90 A27 22.1 0 0 0 77 90 L77 84.8 A27 22.1 0 0 1 23 84.8 Z"/>
+    <ellipse id="pw-foot-top" cx="50" cy="84.8" rx="27" ry="22.1"/>
+    <path id="pw-groove" d="M23.8 84.8 A26.2 21.5 0 0 0 76.2 84.8 L76.2 83.4 A26.2 21.5 0 0 1 23.8 83.4 Z"/>
+    <path id="pw-body" d="M23 83.4 C23.3 70.4 35.5 58.8 41.5 49.8 H58.5 C64.5 58.8 76.7 70.4 77 83.4 A27 22.1 0 0 1 23 83.4 Z"/>
+    <ellipse id="pw-collar" cx="50" cy="49.8" rx="17" ry="15.8"/>
+    <circle id="pw-head" cx="50" cy="35.5" r="19"/>
+    <ellipse id="pw-top" cx="50" cy="25.8" rx="8.5" ry="7"/>
+    <ellipse id="pw-shadow" cx="57" cy="94" rx="30" ry="24.6" fill="#000" opacity="0.5" filter="url(#pawn-blur)"/>
   </defs>
   <symbol id="pawn-1" viewBox="0 0 100 120">
     <use href="#pw-shadow"/>
-    <use href="#pw-base-side" fill="url(#wood-maple)"/><use href="#pw-base-side" fill="url(#shade-cyl)" stroke="#000" stroke-opacity="0.35" stroke-width="0.8"/>
-    <use href="#pw-base-top" fill="url(#wood-maple)"/><use href="#pw-base-top" fill="url(#shade-top)" stroke="#000" stroke-opacity="0.35" stroke-width="0.8"/>
-    <use href="#pw-body" fill="url(#wood-maple)"/><use href="#pw-body" fill="url(#shade-cyl)" stroke="#000" stroke-opacity="0.35" stroke-width="0.8"/>
-    <use href="#pw-collar-side" fill="url(#wood-maple)"/><use href="#pw-collar-side" fill="url(#shade-cyl)" stroke="#000" stroke-opacity="0.35" stroke-width="0.8"/>
-    <use href="#pw-collar-top" fill="url(#wood-maple)"/><use href="#pw-collar-top" fill="url(#shade-top)" stroke="#000" stroke-opacity="0.35" stroke-width="0.8"/>
-    <use href="#pw-ball" fill="url(#wood-maple)"/><use href="#pw-ball" fill="url(#shade-ball)" stroke="#000" stroke-opacity="0.35" stroke-width="0.8"/>
+    <use href="#pw-foot" fill="url(#wood-maple)"/><use href="#pw-foot" fill="url(#pw-cyl)" stroke="#2A1606" stroke-opacity="0.35" stroke-width="0.6"/>
+    <use href="#pw-foot-top" fill="url(#wood-maple)"/><use href="#pw-foot-top" fill="#000" fill-opacity="0.4"/>
+    <use href="#pw-groove" fill="url(#wood-maple)"/><use href="#pw-groove" fill="url(#pw-cyl)"/><use href="#pw-groove" fill="url(#pw-groove-shade)"/>
+    <use href="#pw-body" fill="url(#wood-maple)"/><use href="#pw-body" fill="url(#pw-cyl)"/><use href="#pw-body" fill="url(#pw-body-ao)" stroke="#2A1606" stroke-opacity="0.35" stroke-width="0.6"/>
+    <ellipse cx="50" cy="52.8" rx="14" ry="10.9" fill="#000" opacity="0.45" filter="url(#pw-soft)"/>
+    <use href="#pw-collar" fill="url(#wood-maple)"/><use href="#pw-collar" fill="url(#pw-torus)" stroke="#2A1606" stroke-opacity="0.35" stroke-width="0.6"/>
+    <ellipse cx="50" cy="50.8" rx="15" ry="10.9" fill="#000" opacity="0.45" filter="url(#pw-soft)"/>
+    <use href="#pw-head" fill="url(#wood-maple)"/><use href="#pw-head" fill="url(#pw-ball)" stroke="#2A1606" stroke-opacity="0.35" stroke-width="0.6"/>
+    <use href="#pw-top" fill="#FFF" fill-opacity="0.12" stroke="#2A1606" stroke-opacity="0.2" stroke-width="0.5"/>
   </symbol>
   <symbol id="pawn-2" viewBox="0 0 100 120">
     <use href="#pw-shadow"/>
-    <use href="#pw-base-side" fill="url(#wood-walnut)"/><use href="#pw-base-side" fill="url(#shade-cyl)" stroke="#000" stroke-opacity="0.35" stroke-width="0.8"/>
-    <use href="#pw-base-top" fill="url(#wood-walnut)"/><use href="#pw-base-top" fill="url(#shade-top)" stroke="#000" stroke-opacity="0.35" stroke-width="0.8"/>
-    <use href="#pw-body" fill="url(#wood-walnut)"/><use href="#pw-body" fill="url(#shade-cyl)" stroke="#000" stroke-opacity="0.35" stroke-width="0.8"/>
-    <use href="#pw-collar-side" fill="url(#wood-walnut)"/><use href="#pw-collar-side" fill="url(#shade-cyl)" stroke="#000" stroke-opacity="0.35" stroke-width="0.8"/>
-    <use href="#pw-collar-top" fill="url(#wood-walnut)"/><use href="#pw-collar-top" fill="url(#shade-top)" stroke="#000" stroke-opacity="0.35" stroke-width="0.8"/>
-    <use href="#pw-ball" fill="url(#wood-walnut)"/><use href="#pw-ball" fill="url(#shade-ball)" stroke="#000" stroke-opacity="0.35" stroke-width="0.8"/>
+    <use href="#pw-foot" fill="url(#wood-walnut)"/><use href="#pw-foot" fill="url(#pw-cyl)" stroke="#2A1606" stroke-opacity="0.35" stroke-width="0.6"/>
+    <use href="#pw-foot-top" fill="url(#wood-walnut)"/><use href="#pw-foot-top" fill="#000" fill-opacity="0.4"/>
+    <use href="#pw-groove" fill="url(#wood-walnut)"/><use href="#pw-groove" fill="url(#pw-cyl)"/><use href="#pw-groove" fill="url(#pw-groove-shade)"/>
+    <use href="#pw-body" fill="url(#wood-walnut)"/><use href="#pw-body" fill="url(#pw-cyl)"/><use href="#pw-body" fill="url(#pw-body-ao)" stroke="#2A1606" stroke-opacity="0.35" stroke-width="0.6"/>
+    <ellipse cx="50" cy="52.8" rx="14" ry="10.9" fill="#000" opacity="0.45" filter="url(#pw-soft)"/>
+    <use href="#pw-collar" fill="url(#wood-walnut)"/><use href="#pw-collar" fill="url(#pw-torus)" stroke="#2A1606" stroke-opacity="0.35" stroke-width="0.6"/>
+    <ellipse cx="50" cy="50.8" rx="15" ry="10.9" fill="#000" opacity="0.45" filter="url(#pw-soft)"/>
+    <use href="#pw-head" fill="url(#wood-walnut)"/><use href="#pw-head" fill="url(#pw-ball)" stroke="#2A1606" stroke-opacity="0.35" stroke-width="0.6"/>
+    <use href="#pw-top" fill="#FFF" fill-opacity="0.12" stroke="#2A1606" stroke-opacity="0.2" stroke-width="0.5"/>
   </symbol>
 </svg>
 
@@ -105,7 +131,7 @@
   </div>
 
   <div class="header">
-    <div class="version-badge" id="app-version">v1.5.0</div>
+    <div class="version-badge" id="app-version">v1.6.0</div>
     <h1><span class="fleur" aria-hidden="true">⚜</span> Heraldis</h1>
     <p>Forgez vos alliances, alignez quatre blasons.</p>
   </div>

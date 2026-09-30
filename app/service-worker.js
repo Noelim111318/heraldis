@@ -8,7 +8,7 @@
  *     puis ajoute tout nouveau fichier statique a APP_SHELL ci-dessous.
  */
 self.APP_SLUG = 'heraldis';
-self.APP_VERSION = 'v1.5.0';
+self.APP_VERSION = 'v1.6.0';
 
 self.APP_SHELL = [
   './',

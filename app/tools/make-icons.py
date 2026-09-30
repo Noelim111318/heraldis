@@ -172,10 +172,11 @@ def pawn(img, box, p):
     x0, y0, x1, y1 = box
     cw = x1 - x0
     w = cw * 0.80
-    h = w * 1.2
+    h = w * 1.2                              # viewBox du sprite : 100 x 120
     im = Image.open(path).convert("RGBA").resize((int(w), int(h)), LANCZOS)
     layer = Image.new("RGBA", (S, S), (0, 0, 0, 0))
-    layer.paste(im, (int(x0 + (cw - w) / 2), int(y1 - h - cw * 0.01)), im)
+    # comme en jeu : le point de contact (75 % de la hauteur) au centre de la case
+    layer.paste(im, (int(x0 + (cw - w) / 2), int(y0 + cw / 2 - h * 0.75)), im)
     img.alpha_composite(layer)
 
 
