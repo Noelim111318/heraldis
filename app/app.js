@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  var APP_VERSION = 'v1.7.0';
+  var APP_VERSION = 'v1.7.1';
   var E = window.AppEngine;
   var D = window.HERALDIS_DATA;
   var G = window.HeraldisGame;
@@ -92,9 +92,11 @@
       b.style.setProperty('--c2', h2.color);
       b.style.setProperty('--gx', (c.i * 53 % 220) + 'px');     // chaque case a son propre veinage
       b.style.setProperty('--gy', (c.i * 97 % 220) + 'px');
-      c.syms.forEach(function (k) {
+      c.syms.forEach(function (k, n) {
         var s = document.createElement('span');
-        s.className = 'sym';
+        // classe fixe (sym--1 en haut a gauche, sym--2 en bas a droite) : ne
+        // depend pas de l'ordre des elements de la case (un pion s'insere en tete)
+        s.className = 'sym sym--' + (n + 1);
         s.appendChild(crest(k));
         b.appendChild(s);
       });
@@ -643,7 +645,9 @@
     },
     show: function (light) {
       var pc = Math.round(Math.max(0, Math.min(1, light)) * 100);
-      $('#odds-fill').style.transform = 'scaleX(' + (pc / 100) + ')';
+      var fill = $('#odds-fill');
+      fill.style.width = pc + '%';
+      fill.classList.toggle('is-full', pc === 0 || pc === 100);   // pas de trait de separation au bord
       $('#odds-t1').textContent = pc + ' %';
       $('#odds-t2').textContent = (100 - pc) + ' %';
       $('#odds').setAttribute('aria-label', 'Chances de victoire : Clair ' + pc + ' %, Foncé ' + (100 - pc) + ' %');
