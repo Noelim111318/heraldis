@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Heraldis</title>
   <meta name="description" content="Heraldis — jeu d&#39;alignement héraldique à 2 joueurs, contre un ami ou l&#39;ordinateur.">
-  <meta name="app-version" content="v1.7.1">
+  <meta name="app-version" content="v1.7.2">
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#0B0D19">
   <meta name="mobile-web-app-capable" content="yes">
@@ -135,6 +135,7 @@
   <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
   <symbol id="i-replay" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66L20 8.5M20 3.5v5h-5"/></symbol>
   <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10.5l5 5 5-5M5 19.5h14"/></symbol>
   <symbol id="i-close" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
   <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></symbol>
   <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12.5-7.5z"/></symbol>
@@ -154,7 +155,7 @@
   </div>
 
   <div class="header">
-    <div class="version-badge" id="app-version">v1.7.1</div>
+    <div class="version-badge" id="app-version">v1.7.2</div>
     <h1><span class="fleur" aria-hidden="true">⚜</span> Heraldis</h1>
     <p>Forgez vos alliances, alignez quatre blasons.</p>
   </div>
@@ -218,12 +219,11 @@
     <section class="panel panel--compact" aria-labelledby="settings-title">
       <h2 id="settings-title" class="h-small">Réglages</h2>
       <p class="settings-sub">Aides de jeu</p>
-      <label class="toggle"><input type="checkbox" id="set-hints"><span>Coups possibles</span></label>
       <label class="toggle"><input type="checkbox" id="set-captures"><span>Pions capturables</span></label>
-      <label class="toggle"><input type="checkbox" id="set-last"><span>Dernier coup joué</span></label>
-      <label class="toggle"><input type="checkbox" id="set-truce"><span>Case sous Trêve</span></label>
-      <label class="toggle"><input type="checkbox" id="set-coords"><span>Coordonnées des cases (A1…E5)</span></label>
-      <label class="toggle"><input type="checkbox" id="set-odds" checked><span>Chances de victoire (barre au-dessus du plateau)</span></label>
+      <label class="toggle"><input type="checkbox" id="set-last" checked><span>Dernier coup joué</span></label>
+      <label class="toggle"><input type="checkbox" id="set-truce" checked><span>Case sous Trêve</span></label>
+      <label class="toggle"><input type="checkbox" id="set-coords"><span>Coordonnées des cases</span></label>
+      <label class="toggle"><input type="checkbox" id="set-odds" checked><span>Chances de victoire</span></label>
       <p class="settings-sub">Appareil</p>
       <label class="toggle"><input type="checkbox" id="set-sound" checked><span>Sons</span></label>
       <label class="toggle"><input type="checkbox" id="set-haptic" checked><span>Vibrations</span></label>
@@ -338,14 +338,17 @@
       <p>On ne peut pas reprendre <strong>immédiatement</strong> une case que l'adversaire vient de vous prendre.
         Il faut jouer ailleurs ce tour-ci ; la reprise redevient possible ensuite.</p>
 
+      <div class="rules-app">
       <h3>Dans l'application</h3>
       <ul>
         <li>Les symboles allumés sous chaque joueur indiquent les Maisons qu'il possède.</li>
-        <li>Dans les réglages, des aides de jeu (désactivées par défaut) signalent les coups possibles, les pions capturables (contour rouge), le dernier coup (contour blanc) et la case sous Trêve 🏳️.</li>
+        <li>Dans les réglages, des aides de jeu (à activer ou non) signalent le dernier coup (contour blanc), la case sous Trêve 🏳️, les pions capturables (contour rouge) et les coordonnées des cases.</li>
         <li>La barre au-dessus du plateau estime les chances de victoire de chaque joueur (calculée par l'ordinateur après chaque coup).</li>
         <li>« Conseil » demande à l'IA Minimax le coup qu'elle jouerait à votre place.</li>
       </ul>
+      </div>
     </section>
+    <a class="btn btn--soft" id="rules-pdf" href="regles-heraldis.pdf" download="Heraldis - Règles du jeu.pdf"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg><span>Règles en PDF</span></a>
     <button class="btn btn--soft" id="rules-back-btn" type="button"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg><span>Retour</span></button>
   </div>
 

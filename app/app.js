@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  var APP_VERSION = 'v1.7.1';
+  var APP_VERSION = 'v1.7.2';
   var E = window.AppEngine;
   var D = window.HERALDIS_DATA;
   var G = window.HeraldisGame;
@@ -30,9 +30,9 @@
   var DEMO_DELAY = 750;
 
   /* ------------------------------------------------------------ Reglages */
-  // Aides visuelles (coups possibles, captures, dernier coup, Treve) : coupees
-  // par defaut pour un ressenti proche du vrai jeu. La migration 1 les coupe
-  // aussi chez ceux qui avaient deja des reglages enregistres.
+  // Aides visuelles : dernier coup et Treve actives par defaut ; captures et
+  // coordonnees coupees (ressenti proche du vrai jeu). La migration 1 (v1.7.0)
+  // avait tout coupe chez ceux qui avaient deja des reglages.
   E.store.migrate({
     1: function () {
       var p = E.store.load('prefs', null);
@@ -44,7 +44,7 @@
   var prefs = Object.assign({
     mode: 'ai', ai: 'minimax', level: 'moyen', side: '1',
     demo1: 'minimax:moyen', demo2: 'mcts-heavy:moyen',
-    hints: false, captures: false, lastMove: false, truce: false, odds: true,
+    captures: false, lastMove: true, truce: true, odds: true,
     sound: true, haptic: true, coords: false,
   }, E.store.load('prefs', {}));
   function savePrefs() { E.store.save('prefs', prefs); }
@@ -100,10 +100,12 @@
         s.appendChild(crest(k));
         b.appendChild(s);
       });
-      var co = document.createElement('span');
-      co.className = 'coord';
-      co.textContent = c.label;
-      b.appendChild(co);
+      if (interactive) {                               // pas de coordonnees sur le plateau des regles
+        var co = document.createElement('span');
+        co.className = 'coord';
+        co.textContent = c.label;
+        b.appendChild(co);
+      }
       el.appendChild(b);
       cells.push(b);
     });
@@ -171,7 +173,9 @@
   }
 
   function saveGame() {
-    if (!game || game.over) { E.store.remove('game'); return; }
+    // Pas de partie en cours : la cle est videe, pas supprimee (diag.html
+    // signale toute cle qui disparait comme une possible perte de donnees).
+    if (!game || game.over) { E.store.save('game', null); return; }
     E.store.save('game', {
       mode: game.mode, players: game.players,
       state: G.toJSON(game.state),
@@ -280,7 +284,7 @@
     stopTurn();
     render();
     if (capped) { OddsRunner.cancel(); Odds.show(0.5); } else Odds.update();
-    E.store.remove('game');
+    E.store.save('game', null);
     var title, sub = '';
     var w = capped ? G.DRAW : s.winner;
     var humanWon = w !== G.DRAW && game.players[w].type === 'human';
@@ -305,7 +309,6 @@
       E.sound.feedback(false); E.haptic('error');
     } else {
       E.sound.feedback(true); E.haptic('success');
-      if (w !== G.DRAW) E.fx.burst(true, { colors: ['#E8B84A', '#F4EEDC', '#5FCB85', '#86AEEA'] });
     }
     if (!game.counted) { recordStats(w); game.counted = true; }
     renderActions();
@@ -361,7 +364,6 @@
     var s = game.state;
     var human = isHumanTurn();
     var legal = human ? G.legalMoves(s) : [];
-    boardEl.classList.toggle('show-moves', !!prefs.hints && human);
     boardEl.classList.toggle('show-captures', !!prefs.captures && human);
     boardEl.classList.toggle('show-last', !!prefs.lastMove);
     boardEl.classList.toggle('is-busy', !human && !game.over);
@@ -783,7 +785,6 @@
 
     // aides de jeu (toutes coupees par defaut) + chances de victoire
     var rerender = function (v, init) { if (!init && game && E.screens.current() === 'screen-play') render(); };
-    bindToggle('set-hints', 'hints', rerender);
     bindToggle('set-captures', 'captures', rerender);
     bindToggle('set-last', 'lastMove', rerender);
     bindToggle('set-truce', 'truce', rerender);
