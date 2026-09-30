@@ -76,12 +76,28 @@
   }
   function splitKeys(k) { return k ? String(k).split(',').filter(Boolean) : []; }
 
+  // Un ecart HTML/JS (e.x = 'html>script') est « resolu » si une ouverture
+  // posterieure, dans les RESOLVE_MS, tourne deja avec la version du HTML :
+  // c'est le passage normal d'une mise a jour (HTML neuf servi avant le JS
+  // neuf, un rechargement de la garde de version, puis tout est aligne).
+  var RESOLVE_MS = 10 * 60 * 1000;
+  function mismatchResolved(list, i) {
+    var e = list[i], html = String(e.x).split('>')[0], t0 = new Date(e.t).getTime();
+    for (var j = i + 1; j < list.length; j++) {
+      var n = list[j], dt = new Date(n.t).getTime() - t0;
+      if (isNaN(dt) || dt > RESOLVE_MS) break;
+      if (!n.x && n.v === html) return true;
+    }
+    return false;
+  }
+
   // Journal des ouvertures -> { lines, flags }. flags = [{ level: 'bad'|'warn', text }].
-  // Detecte : mises a jour, changement de mode, HTML/JS de versions differentes,
-  // et surtout les cles qui DISPARAISSENT d'une ouverture a la suivante.
+  // Detecte : mises a jour, changement de mode, HTML/JS de versions differentes
+  // (sauf ceux resolus aussitot par la mise a jour), et surtout les cles qui
+  // DISPARAISSENT d'une ouverture a la suivante.
   function analyzeJournal(entries) {
-    var lines = [], flags = [], prev = null;
-    (entries || []).forEach(function (e) {
+    var lines = [], flags = [], prev = null, list = entries || [];
+    list.forEach(function (e, i) {
       var keys = splitKeys(e.k), notes = [];
       if (prev) {
         if (prev.v !== e.v) notes.push('mise à jour ' + prev.v + ' → ' + e.v);
@@ -103,8 +119,12 @@
         if (prev.m !== e.m) notes.push('mode ' + (e.m ? 'installé' : 'onglet'));
       }
       if (e.x) {
-        notes.push('HTML/JS différents (' + e.x + ')');
-        flags.push({ level: 'warn', text: 'HTML et script de versions différentes à l\'ouverture de ' + shortTime(e.t) + ' (' + e.x + ')' });
+        if (mismatchResolved(list, i)) {
+          notes.push('HTML/JS différents (' + e.x + '), résolu par la mise à jour');
+        } else {
+          notes.push('HTML/JS différents (' + e.x + ')');
+          flags.push({ level: 'warn', text: 'HTML et script de versions différentes à l\'ouverture de ' + shortTime(e.t) + ' (' + e.x + ')' });
+        }
       }
       lines.push(shortTime(e.t) + ' | ' + (e.v || '?') + ' | ' + (e.m ? 'installée' : 'onglet')
         + (e.o === 0 ? ' | hors ligne' : '') + (e.c === 0 ? ' | sans SW' : '')

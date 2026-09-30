@@ -3,7 +3,7 @@
   "name": "Heraldis",
   "short_name": "Heraldis",
   "description": "Heraldis — jeu d'alignement héraldique à 2 joueurs, contre un ami ou l'ordinateur.",
-  "version": "v1.7.2",
+  "version": "v1.7.3",
   "lang": "fr",
   "dir": "ltr",
   "start_url": "./index.html",
