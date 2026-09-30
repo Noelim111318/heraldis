@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  var APP_VERSION = 'v1.7.3';
+  var APP_VERSION = 'v1.7.4';
   var E = window.AppEngine;
   var D = window.HERALDIS_DATA;
   var G = window.HeraldisGame;
@@ -803,6 +803,7 @@
 
   function bindToggle(id, key, apply) {
     var el = $('#' + id);
+    if (!el) return;              // HTML d'une autre version (mise a jour en cours) : on n'insiste pas
     el.checked = !!prefs[key];
     if (apply) apply(!!prefs[key], true);
     el.addEventListener('change', function () {

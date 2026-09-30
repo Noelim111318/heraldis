@@ -129,7 +129,9 @@ else:
 rev = os.environ.get('COMPAT', '')
 if rev:
     try:
-        old = subprocess.run(['git', 'show', rev + ':index.html'], capture_output=True, text=True, check=True).stdout
+        # ':./index.html' = chemin relatif au dossier courant (l'app), pas a la racine du
+        # depot : sinon une app rangee dans un sous-dossier sautait ce controle en silence.
+        old = subprocess.run(['git', 'show', rev + ':./index.html'], capture_output=True, text=True, check=True).stdout
     except (OSError, subprocess.CalledProcessError):
         print("  (--compat %s : index.html introuvable a cette revision — saute)" % rev)
     else:

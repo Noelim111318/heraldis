@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Heraldis</title>
   <meta name="description" content="Heraldis — jeu d&#39;alignement héraldique à 2 joueurs, contre un ami ou l&#39;ordinateur.">
-  <meta name="app-version" content="v1.7.3">
+  <meta name="app-version" content="v1.7.4">
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#0B0D19">
   <meta name="mobile-web-app-capable" content="yes">
@@ -155,7 +155,7 @@
   </div>
 
   <div class="header">
-    <div class="version-badge" id="app-version">v1.7.3</div>
+    <div class="version-badge" id="app-version">v1.7.4</div>
     <h1><span class="fleur" aria-hidden="true">⚜</span> Heraldis</h1>
     <p>Forgez vos alliances, alignez quatre blasons.</p>
   </div>
@@ -222,6 +222,10 @@
       <label class="toggle"><input type="checkbox" id="set-captures"><span>Pions capturables</span></label>
       <label class="toggle"><input type="checkbox" id="set-last" checked><span>Dernier coup joué</span></label>
       <label class="toggle"><input type="checkbox" id="set-truce" checked><span>Case sous Trêve</span></label>
+      <!-- Ancienne option « Coups possibles » (retiree en v1.7.2). Element garde,
+           invisible : pendant une mise a jour, l'ancien script (v1.7.1 et avant)
+           le cherche encore. Ne jamais retirer un identifiant (engine/README.md). -->
+      <input type="checkbox" id="set-hints" hidden aria-hidden="true" tabindex="-1">
       <label class="toggle"><input type="checkbox" id="set-coords"><span>Coordonnées des cases</span></label>
       <label class="toggle"><input type="checkbox" id="set-odds" checked><span>Chances de victoire</span></label>
       <p class="settings-sub">Appareil</p>
