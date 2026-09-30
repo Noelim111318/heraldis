@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Heraldis</title>
   <meta name="description" content="Heraldis — jeu d&#39;alignement héraldique à 2 joueurs, contre un ami ou l&#39;ordinateur.">
-  <meta name="app-version" content="v1.6.0">
+  <meta name="app-version" content="v1.7.0">
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#0B0D19">
   <meta name="mobile-web-app-capable" content="yes">
@@ -30,6 +30,18 @@
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
   <defs>
     <filter id="pawn-blur" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="2.6"/></filter>
+    <!-- contours (dernier coup, capture) : silhouette dilatee du meme rayon dans
+         toutes les directions, donc d'epaisseur egale tout autour -->
+    <filter id="pw-outline-last" x="-10%" y="-10%" width="120%" height="120%">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="3.2" result="d"/>
+      <feFlood flood-color="#FFFFFF"/><feComposite in2="d" operator="in" result="o"/>
+      <feMerge><feMergeNode in="o"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="pw-outline-cap" x="-10%" y="-10%" width="120%" height="120%">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="3.2" result="d"/>
+      <feFlood flood-color="#EF6A5E"/><feComposite in2="d" operator="in" result="o"/>
+      <feMerge><feMergeNode in="o"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
     <filter id="pw-soft" x="-30%" y="-100%" width="160%" height="300%"><feGaussianBlur stdDeviation="1.4"/></filter>
     <!-- fil du bois vertical (le long de l'axe du pion), peu contraste : bois mat -->
     <filter id="grain-maple" x="0" y="0" width="100%" height="100%">
@@ -93,7 +105,6 @@
     <ellipse id="pw-shadow" cx="57" cy="94" rx="30" ry="24.6" fill="#000" opacity="0.5" filter="url(#pawn-blur)"/>
   </defs>
   <symbol id="pawn-1" viewBox="0 0 100 120">
-    <use href="#pw-shadow"/>
     <use href="#pw-foot" fill="url(#wood-maple)"/><use href="#pw-foot" fill="url(#pw-cyl)" stroke="#2A1606" stroke-opacity="0.35" stroke-width="0.6"/>
     <use href="#pw-foot-top" fill="url(#wood-maple)"/><use href="#pw-foot-top" fill="#000" fill-opacity="0.4"/>
     <use href="#pw-groove" fill="url(#wood-maple)"/><use href="#pw-groove" fill="url(#pw-cyl)"/><use href="#pw-groove" fill="url(#pw-groove-shade)"/>
@@ -105,7 +116,6 @@
     <use href="#pw-top" fill="#FFF" fill-opacity="0.12" stroke="#2A1606" stroke-opacity="0.2" stroke-width="0.5"/>
   </symbol>
   <symbol id="pawn-2" viewBox="0 0 100 120">
-    <use href="#pw-shadow"/>
     <use href="#pw-foot" fill="url(#wood-walnut)"/><use href="#pw-foot" fill="url(#pw-cyl)" stroke="#2A1606" stroke-opacity="0.35" stroke-width="0.6"/>
     <use href="#pw-foot-top" fill="url(#wood-walnut)"/><use href="#pw-foot-top" fill="#000" fill-opacity="0.4"/>
     <use href="#pw-groove" fill="url(#wood-walnut)"/><use href="#pw-groove" fill="url(#pw-cyl)"/><use href="#pw-groove" fill="url(#pw-groove-shade)"/>
@@ -116,6 +126,19 @@
     <use href="#pw-head" fill="url(#wood-walnut)"/><use href="#pw-head" fill="url(#pw-ball)" stroke="#2A1606" stroke-opacity="0.35" stroke-width="0.6"/>
     <use href="#pw-top" fill="#FFF" fill-opacity="0.12" stroke="#2A1606" stroke-opacity="0.2" stroke-width="0.5"/>
   </symbol>
+  <!-- ombre portee a part : les contours (dernier coup, capture) ne l'entourent pas -->
+  <symbol id="pawn-shadow" viewBox="0 0 100 120"><use href="#pw-shadow"/></symbol>
+</svg>
+
+<!-- Icones des boutons : traits simples, couleur du texte (currentColor). -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+  <symbol id="i-replay" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66L20 8.5M20 3.5v5h-5"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12.5-7.5z"/></symbol>
+  <symbol id="i-hint" viewBox="0 0 24 24"><path d="M9.5 18h5M10.5 21.5h3M12 2.5a6.5 6.5 0 0 0-3.8 11.8c.8.6 1.3 1.4 1.3 2.3v.4h5v-.4c0-.9.5-1.7 1.3-2.3A6.5 6.5 0 0 0 12 2.5z"/></symbol>
 </svg>
 
 <a class="skip-link" href="#main">Aller au contenu</a>
@@ -131,14 +154,14 @@
   </div>
 
   <div class="header">
-    <div class="version-badge" id="app-version">v1.6.0</div>
+    <div class="version-badge" id="app-version">v1.7.0</div>
     <h1><span class="fleur" aria-hidden="true">⚜</span> Heraldis</h1>
     <p>Forgez vos alliances, alignez quatre blasons.</p>
   </div>
 
   <!-- ===================================================== ACCUEIL -->
   <div class="screen active" id="screen-home">
-    <button class="btn btn--resume" id="resume-btn" type="button" hidden>▶ Reprendre la partie en cours</button>
+    <button class="btn btn--resume" id="resume-btn" type="button" hidden><svg class="ico" aria-hidden="true"><use href="#i-play"/></svg><span>Reprendre la partie en cours</span></button>
 
     <section class="panel" aria-labelledby="new-title">
       <h2 id="new-title">Nouvelle partie</h2>
@@ -194,10 +217,16 @@
 
     <section class="panel panel--compact" aria-labelledby="settings-title">
       <h2 id="settings-title" class="h-small">Réglages</h2>
-      <label class="toggle"><input type="checkbox" id="set-hints" checked><span>Montrer les coups possibles et les captures</span></label>
+      <p class="settings-sub">Aides de jeu</p>
+      <label class="toggle"><input type="checkbox" id="set-hints"><span>Coups possibles</span></label>
+      <label class="toggle"><input type="checkbox" id="set-captures"><span>Pions capturables</span></label>
+      <label class="toggle"><input type="checkbox" id="set-last"><span>Dernier coup joué</span></label>
+      <label class="toggle"><input type="checkbox" id="set-truce"><span>Case sous Trêve</span></label>
+      <label class="toggle"><input type="checkbox" id="set-coords"><span>Coordonnées des cases (A1…E5)</span></label>
+      <label class="toggle"><input type="checkbox" id="set-odds" checked><span>Chances de victoire (barre au-dessus du plateau)</span></label>
+      <p class="settings-sub">Appareil</p>
       <label class="toggle"><input type="checkbox" id="set-sound" checked><span>Sons</span></label>
       <label class="toggle"><input type="checkbox" id="set-haptic" checked><span>Vibrations</span></label>
-      <label class="toggle"><input type="checkbox" id="set-coords"><span>Afficher les coordonnées</span></label>
     </section>
 
     <div class="home-footer">
@@ -224,35 +253,41 @@
       </div>
     </div>
 
+    <div class="odds" id="odds" role="img" aria-label="Chances de victoire">
+      <span class="odds-t" id="odds-t1">50 %</span>
+      <div class="odds-bar"><span class="odds-fill" id="odds-fill"></span></div>
+      <span class="odds-t" id="odds-t2">50 %</span>
+    </div>
+
     <p class="status" id="status" role="status" aria-live="polite"></p>
 
     <div class="board-wrap">
       <div class="board" id="board" role="grid" aria-label="Plateau de jeu"></div>
     </div>
 
-    <p class="ai-info" id="ai-info"></p>
+    <p class="ai-info" id="ai-info"><span id="ai-info-1"></span><span id="ai-info-2"></span></p>
 
     <div class="result" id="result" hidden>
       <h2 id="result-title"></h2>
       <p id="result-sub"></p>
       <div class="result-actions">
-        <button class="btn btn--primary" id="again-btn" type="button">🔄 Rejouer</button>
-        <button class="btn btn--soft" id="home-btn" type="button">← Accueil</button>
+        <button class="btn btn--primary" id="again-btn" type="button"><svg class="ico" aria-hidden="true"><use href="#i-replay"/></svg><span>Rejouer</span></button>
+        <button class="btn btn--soft" id="home-btn" type="button"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg><span>Accueil</span></button>
       </div>
     </div>
 
     <div class="actions" id="actions">
-      <button class="btn btn--soft" id="undo-btn" type="button">↶ Annuler</button>
-      <button class="btn btn--soft" id="hint-btn" type="button">💡 Conseil</button>
-      <button class="btn btn--soft" id="pause-btn" type="button" hidden>⏸ Pause</button>
-      <button class="btn btn--soft" id="quit-btn" type="button">✕ Quitter</button>
+      <button class="btn btn--soft" id="undo-btn" type="button"><svg class="ico" aria-hidden="true"><use href="#i-undo"/></svg><span>Annuler</span></button>
+      <button class="btn btn--soft" id="hint-btn" type="button"><svg class="ico" aria-hidden="true"><use href="#i-hint"/></svg><span>Conseil</span></button>
+      <button class="btn btn--soft" id="pause-btn" type="button" hidden><svg class="ico" aria-hidden="true"><use href="#i-pause"/></svg><span>Pause</span></button>
+      <button class="btn btn--soft" id="quit-btn" type="button"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg><span>Quitter</span></button>
     </div>
 
     <div class="legend">
       <span><i class="lg lg--house"></i> Maison : immunisée</span>
-      <span><i class="lg lg--last"></i> Dernier coup</span>
-      <span><i class="lg lg--cap"></i> Capturable</span>
-      <span>🏳️ Trêve</span>
+      <span data-pref="lastMove"><i class="lg lg--last"></i> Dernier coup</span>
+      <span data-pref="captures"><i class="lg lg--cap"></i> Capturable</span>
+      <span data-pref="truce">🏳️ Trêve</span>
     </div>
 
     <details class="log">
@@ -306,11 +341,12 @@
       <h3>Dans l'application</h3>
       <ul>
         <li>Les symboles allumés sous chaque joueur indiquent les Maisons qu'il possède.</li>
-        <li>Un anneau rouge ⚔ signale les pions adverses que vous pouvez capturer ; 🏳️ marque la case sous Trêve.</li>
+        <li>Dans les réglages, des aides de jeu (désactivées par défaut) signalent les coups possibles, les pions capturables (contour rouge), le dernier coup (contour blanc) et la case sous Trêve 🏳️.</li>
+        <li>La barre au-dessus du plateau estime les chances de victoire de chaque joueur (calculée par l'ordinateur après chaque coup).</li>
         <li>« Conseil » demande à l'IA Minimax le coup qu'elle jouerait à votre place.</li>
       </ul>
     </section>
-    <button class="btn btn--soft" id="rules-back-btn" type="button">← Retour</button>
+    <button class="btn btn--soft" id="rules-back-btn" type="button"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg><span>Retour</span></button>
   </div>
 
   <!-- ===================================================== STATISTIQUES -->
@@ -319,7 +355,7 @@
       <h2>Statistiques</h2>
       <div id="stats-body"></div>
     </section>
-    <button class="btn btn--soft" id="stats-back-btn" type="button">← Retour</button>
+    <button class="btn btn--soft" id="stats-back-btn" type="button"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg><span>Retour</span></button>
     <div class="home-footer">
       <button class="diag-link" id="stats-reset-btn" type="button">Effacer les statistiques</button>
     </div>

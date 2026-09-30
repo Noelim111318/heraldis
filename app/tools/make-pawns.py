@@ -20,6 +20,7 @@ INDEX = os.path.join(os.path.dirname(HERE), "index.html")
 
 ELEVATION = 55                    # degres
 CX, Y0 = 50, 90                   # point de contact au sol dans le viewBox
+OUTLINE = 3.2                     # epaisseur des contours, en unites du viewBox (~1,5 px sur telephone)
 
 # Profil reel (unites libres) : hauteurs h depuis le sol, rayons r.
 PROFIL = {
@@ -100,7 +101,6 @@ def ao(e, op):
 def pawn(n, wood, aos):
     W = f"url(#wood-{wood})"
     return (f'  <symbol id="pawn-{n}" viewBox="0 0 100 120">'
-            f'\n    <use href="#pw-shadow"/>'
             f'\n    <use href="#pw-foot" fill="{W}"/><use href="#pw-foot" fill="url(#pw-cyl)" {LINE}/>'
             f'\n    <use href="#pw-foot-top" fill="{W}"/><use href="#pw-foot-top" fill="#000" fill-opacity="0.4"/>'
             f'\n    <use href="#pw-groove" fill="{W}"/><use href="#pw-groove" fill="url(#pw-cyl)"/><use href="#pw-groove" fill="url(#pw-groove-shade)"/>'
@@ -129,6 +129,18 @@ def sprite():
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
   <defs>
     <filter id="pawn-blur" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="2.6"/></filter>
+    <!-- contours (dernier coup, capture) : silhouette dilatee du meme rayon dans
+         toutes les directions, donc d'epaisseur egale tout autour -->
+    <filter id="pw-outline-last" x="-10%" y="-10%" width="120%" height="120%">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="{OUTLINE}" result="d"/>
+      <feFlood flood-color="#FFFFFF"/><feComposite in2="d" operator="in" result="o"/>
+      <feMerge><feMergeNode in="o"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="pw-outline-cap" x="-10%" y="-10%" width="120%" height="120%">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="{OUTLINE}" result="d"/>
+      <feFlood flood-color="#EF6A5E"/><feComposite in2="d" operator="in" result="o"/>
+      <feMerge><feMergeNode in="o"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
     <filter id="pw-soft" x="-30%" y="-100%" width="160%" height="300%"><feGaussianBlur stdDeviation="1.4"/></filter>
     <!-- fil du bois vertical (le long de l'axe du pion), peu contraste : bois mat -->
     <filter id="grain-maple" x="0" y="0" width="100%" height="100%">
@@ -183,7 +195,9 @@ def sprite():
     </radialGradient>
     <!-- formes -->{defs_shapes}
   </defs>
-{pawn(1, "maple", aos)}{pawn(2, "walnut", aos)}</svg>
+{pawn(1, "maple", aos)}{pawn(2, "walnut", aos)}  <!-- ombre portee a part : les contours (dernier coup, capture) ne l'entourent pas -->
+  <symbol id="pawn-shadow" viewBox="0 0 100 120"><use href="#pw-shadow"/></symbol>
+</svg>
 '''
 
 

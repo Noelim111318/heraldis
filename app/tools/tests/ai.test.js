@@ -95,3 +95,18 @@ test('MCTS bat nettement l\'aleatoire', () => {
   const r = playMatch({ id: 'mcts', cfg: { time: 60 } }, { id: 'random' }, 10);
   assert.ok(r.wa >= 8, JSON.stringify(r));
 });
+
+test('estimation des chances : bornee, et certaine sur un gain force', () => {
+  const debut = AI.estimate(G.newGame(), { time: 200 }).light;
+  assert.ok(debut >= 0 && debut <= 1, String(debut));
+  // Clair au trait gagne en D1 : 100 % pour Clair
+  const s = position({ L: ['A1', 'B1', 'C1'], D: ['A5', 'B5', 'E5'], toMove: 1 });
+  assert.strictEqual(AI.estimate(s, { time: 200 }).light, 1);
+  // meme position, Fonce au trait mais incapable de parer (pas de capture possible) : Clair gagne quand meme
+  const t = position({ L: ['A1', 'B1', 'C1', 'A3', 'B3', 'C3'], D: ['A5', 'B5'], toMove: 2 });
+  assert.ok(AI.estimate(t, { time: 300 }).light > 0.9);
+  // partie finie
+  const f = position({ L: ['A1', 'B1', 'C1'], toMove: 1 });
+  G.play(f, idx('D1'));
+  assert.strictEqual(AI.estimate(f).light, 1);
+});

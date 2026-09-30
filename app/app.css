@@ -64,6 +64,14 @@ body.play-active .container { gap: 12px; }
 
 h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
 .h-small { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.settings-sub { font-size: 0.72rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: var(--ink-dim); margin: 10px 0 2px; }
+
+/* Icones des boutons (sprite #i-*) : alignees sur le texte par .btn (inline-flex). */
+.ico {
+  width: 1.15em; height: 1.15em; flex: none;
+  fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+}
+#i-play path { fill: currentColor; }
 
 /* ------------------------------------------------------------- Boutons */
 .btn--soft {
@@ -155,7 +163,30 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
 .status { min-height: 1.4em; font-weight: 800; text-align: center; color: var(--ink); }
 .status .thinking::after { content: '…'; animation: blink 1s steps(2) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
-.ai-info { font-size: 0.72rem; color: var(--ink-dim); text-align: center; min-height: 1em; margin-top: -8px; }
+.ai-info { font-size: 0.72rem; color: var(--ink-dim); text-align: center; margin-top: -8px; width: 100%; line-height: 1.35; }
+/* deux lignes fixes, jamais de retour a la ligne (place reservee si une IA joue) */
+.ai-info span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ai-info span:first-child { font-weight: 800; color: var(--ink-soft); }
+.ai-info.has-ai span { min-height: 1.35em; }
+
+/* Chances de victoire : barre erable / noyer, la part de Clair s'etire depuis
+   la gauche (transform : pas de relayout). */
+.odds { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: -4px; }
+.odds-t { font-size: 0.78rem; font-weight: 900; min-width: 3.1em; font-variant-numeric: tabular-nums; }
+.odds-t:first-child { text-align: right; color: #E6C48E; }
+.odds-t:last-child { color: #B98A62; }
+.odds-bar {
+  position: relative; flex: 1; height: 10px; border-radius: 999px; overflow: hidden;
+  background: var(--walnut); box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+.odds-fill {
+  position: absolute; inset: 0; background: var(--maple); transform-origin: left center;
+  transform: scaleX(0.5); transition: transform 0.6s ease;
+}
+.odds-bar::after {                                  /* repere des 50 % */
+  content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(0, 0, 0, 0.35);
+}
+.odds.is-computing .odds-bar { opacity: 0.75; }
 
 /* -------------------------------------------------------------- Plateau */
 /* Bois : grain procedural (SVG feTurbulence etire -> fibres), sans fichier
@@ -218,9 +249,11 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
 
 .sym {                                            /* sous les pions, comme sur un vrai plateau */
   position: absolute; z-index: 1; line-height: 1; pointer-events: none;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
+  filter: drop-shadow(0 0 0.7px rgba(35, 18, 0, 0.95)) drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.55));
 }
-.sym .crest { display: block; }
+/* Emblemes du plateau : peinture doree satinee (le liseré sombre du filtre
+   ci-dessus garde l'aigle lisible sur ses cases jaunes). */
+.sym .crest { display: block; background: linear-gradient(160deg, #EBCB7C 0%, #D6AE56 45%, #BF9440 75%, #CFA650 100%); }
 .cell--house .sym { font-size: calc(var(--bw) * 0.125); top: 50%; left: 50%; transform: translate(-50%, -50%); }
 .cell--alliance .sym { font-size: calc(var(--bw) * 0.074); }
 .cell--alliance .sym:nth-of-type(1) { top: 5%; left: 5%; }
@@ -235,11 +268,12 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
    a la case du pion). Le halo (dernier coup, capture) suit la silhouette. */
 .piece {
   position: absolute; z-index: 2; left: 50%; top: 50%;
-  width: 76%; aspect-ratio: 100 / 120;
+  width: 84%; aspect-ratio: 100 / 120;
   transform: translate(-50%, -75%); pointer-events: none;
   animation: drop 0.25s ease-out;
 }
-.piece svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.piece svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; overflow: visible; }
+.piece .pawn-shadow use { pointer-events: none; }
 .piece use { pointer-events: visiblePainted; cursor: inherit; }
 @keyframes drop {
   0% { transform: translate(-50%, -110%); opacity: 0; }
@@ -248,7 +282,7 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
 }
 
 .cell.is-playable { cursor: pointer; }
-.board.hints .cell.is-playable:not(.has-piece)::after {
+.board.show-moves .cell.is-playable:not(.has-piece)::after {
   content: ''; position: absolute; z-index: 1; top: 50%; left: 50%;
   width: 11%; height: 11%; border-radius: 50%; transform: translate(-50%, -50%);
   background: rgba(255, 255, 255, 0.55); box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.25), 0 0 6px rgba(255, 255, 255, 0.4);
@@ -256,17 +290,17 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
 @media (hover: hover) and (pointer: fine) {
   .cell.is-playable:hover { box-shadow: inset 0 0 0 3px #fff, var(--lip); }
 }
-.board.hints .cell.is-capturable .piece { filter: drop-shadow(0 0 2px var(--red)) drop-shadow(0 0 5px var(--red)); animation: pulse 1.4s ease-in-out infinite; }
-.board.hints .cell.is-capturable::after {
-  content: '⚔'; position: absolute; z-index: 3; top: 3%; right: 6%;
-  font-size: calc(var(--bw) * 0.04); color: #fff; text-shadow: 0 0 4px var(--red);
-}
+/* Aides de jeu (reglages, coupees par defaut) : halos fixes, sans animation en
+   boucle (repeindre les pions a chaque image ralentissait l'app). */
+/* Contour net et symetrique qui epouse la silhouette : filtre SVG de
+   dilatation (#pw-outline-*, dans le sprite des pions). */
+.board.show-captures .cell.is-capturable .piece .pawn use { filter: url(#pw-outline-cap); }
 .cell.is-locked { cursor: not-allowed; }
 .cell.is-locked::before { background: rgba(8, 9, 16, 0.62); }
 /* Dernier coup : anneau blanc sur le pion (l'or est reserve aux Maisons). */
-.cell.is-last .piece { filter: drop-shadow(0 0 1.5px #FFF) drop-shadow(0 0 5px rgba(255, 255, 255, 0.8)); }
-.cell.is-win { animation: winGlow 1s ease-in-out infinite alternate; outline: 3px solid var(--green); outline-offset: -3px; }
-.cell.is-hint { outline: 4px solid var(--blue); outline-offset: -4px; animation: pulseHint 1s ease-in-out infinite; }
+.board.show-last .cell.is-last .piece .pawn use { filter: url(#pw-outline-last); }
+.cell.is-win { outline: 3px solid var(--green); outline-offset: -3px; box-shadow: inset 0 0 22px var(--green), var(--lip); }
+.cell.is-hint { outline: 4px solid var(--blue); outline-offset: -4px; box-shadow: inset 0 0 18px var(--blue), var(--lip); }
 .truce {
   position: absolute; z-index: 3; top: 3%; right: 5%; font-size: calc(var(--bw) * 0.042);
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
@@ -278,12 +312,6 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
 body.show-coords .coord { display: block; }
 body.show-coords .cell--alliance .sym:nth-of-type(2) { bottom: 8%; }
 
-@keyframes pulse {
-  0%, 100% { filter: drop-shadow(0 0 2px var(--red)) drop-shadow(0 0 3px var(--red)); }
-  50% { filter: drop-shadow(0 0 2px var(--red)) drop-shadow(0 0 9px var(--red)); }
-}
-@keyframes pulseHint { 50% { outline-color: #fff; } }
-@keyframes winGlow { to { box-shadow: inset 0 0 26px var(--green); } }
 .board.is-busy .cell { cursor: progress; }
 
 /* Plateau miniature (regles) */
@@ -308,7 +336,7 @@ body.show-coords .cell--alliance .sym:nth-of-type(2) { bottom: 8%; }
 }
 .lg { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; }
 .lg--house { box-shadow: inset 0 0 0 2px var(--gold); background: var(--card); }
-.lg--last { border-radius: 50%; box-shadow: 0 0 0 2px #FFF, 0 0 6px #FFF; background: var(--maple); }
+.lg--last { border-radius: 50%; box-shadow: 0 0 0 2px #FFF; background: var(--maple); }
 .lg--cap { border-radius: 50%; box-shadow: 0 0 0 2px var(--red); background: var(--walnut); }
 
 .log { width: 100%; font-size: 0.85rem; color: var(--ink-soft); }

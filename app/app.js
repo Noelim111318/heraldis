@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  var APP_VERSION = 'v1.6.0';
+  var APP_VERSION = 'v1.7.0';
   var E = window.AppEngine;
   var D = window.HERALDIS_DATA;
   var G = window.HeraldisGame;
@@ -30,10 +30,22 @@
   var DEMO_DELAY = 750;
 
   /* ------------------------------------------------------------ Reglages */
+  // Aides visuelles (coups possibles, captures, dernier coup, Treve) : coupees
+  // par defaut pour un ressenti proche du vrai jeu. La migration 1 les coupe
+  // aussi chez ceux qui avaient deja des reglages enregistres.
+  E.store.migrate({
+    1: function () {
+      var p = E.store.load('prefs', null);
+      if (!p) return;
+      p.hints = false; p.captures = false; p.lastMove = false; p.truce = false;
+      E.store.save('prefs', p);
+    },
+  });
   var prefs = Object.assign({
     mode: 'ai', ai: 'minimax', level: 'moyen', side: '1',
     demo1: 'minimax:moyen', demo2: 'mcts-heavy:moyen',
-    hints: true, sound: true, haptic: true, coords: false,
+    hints: false, captures: false, lastMove: false, truce: false, odds: true,
+    sound: true, haptic: true, coords: false,
   }, E.store.load('prefs', {}));
   function savePrefs() { E.store.save('prefs', prefs); }
 
@@ -53,6 +65,9 @@
     var a = aiById(ai);
     return a.levels ? (a.levels[level] || a.levels.moyen) : null;
   }
+
+  // Icone du sprite d'index.html (#i-back, #i-replay...), a la couleur du texte.
+  function icon(name) { return '<svg class="ico" aria-hidden="true"><use href="#i-' + name + '"/></svg>'; }
 
   /* ------------------------------------------------------------ Plateau */
   // Embleme d'une Maison : silhouette PNG utilisee comme masque (couleur en CSS).
@@ -146,7 +161,8 @@
     };
     shownPieces.fill(-1);
     $('#log-list').textContent = '';
-    $('#ai-info').textContent = '';
+    showAiInfo(null);
+    Odds.reset();
     saveGame();
     E.sound.resume();
     showPlay();
@@ -181,7 +197,8 @@
     game = g;
     shownPieces.fill(-1);
     rebuildLog();
-    $('#ai-info').textContent = '';
+    showAiInfo(null);
+    Odds.reset();
     E.sound.resume();
     showPlay();
   }
@@ -208,6 +225,7 @@
     if (s.winner) { endGame(); return; }
     if (game.mode === 'demo' && s.ply >= DEMO_MAX_PLY) { endGame(true); return; }
     render();
+    Odds.update();
     var p = s.toMove, pl = current();
     var moves = G.legalMoves(s);
 
@@ -259,6 +277,7 @@
     game.over = true;
     stopTurn();
     render();
+    if (capped) { OddsRunner.cancel(); Odds.show(0.5); } else Odds.update();
     E.store.remove('game');
     var title, sub = '';
     var w = capped ? G.DRAW : s.winner;
@@ -340,7 +359,9 @@
     var s = game.state;
     var human = isHumanTurn();
     var legal = human ? G.legalMoves(s) : [];
-    boardEl.classList.toggle('hints', !!prefs.hints && human);
+    boardEl.classList.toggle('show-moves', !!prefs.hints && human);
+    boardEl.classList.toggle('show-captures', !!prefs.captures && human);
+    boardEl.classList.toggle('show-last', !!prefs.lastMove);
     boardEl.classList.toggle('is-busy', !human && !game.over);
     var winSet = s.winLine || [];
 
@@ -354,7 +375,8 @@
           var pc = document.createElement('span');
           pc.className = 'piece piece--' + v;
           // pion dessine dans le sprite SVG d'index.html (#pawn-1 / #pawn-2)
-          pc.innerHTML = '<svg viewBox="0 0 100 120" aria-hidden="true"><use href="#pawn-' + v + '"/></svg>';
+          pc.innerHTML = '<svg class="pawn-shadow" viewBox="0 0 100 120" aria-hidden="true"><use href="#pawn-shadow"/></svg>' +
+            '<svg class="pawn" viewBox="0 0 100 120" aria-hidden="true"><use href="#pawn-' + v + '"/></svg>';
           el.insertBefore(pc, el.firstChild);
         }
         shownPieces[i] = v;
@@ -369,7 +391,7 @@
       el.classList.toggle('is-hint', hintCell === i);
 
       var truce = el.querySelector('.truce');
-      var showTruce = s.truce === i && !s.winner;
+      var showTruce = !!prefs.truce && s.truce === i && !s.winner;
       if (showTruce && !truce) {
         truce = document.createElement('span');
         truce.className = 'truce';
@@ -380,7 +402,7 @@
 
       var label = c.label + ', ' + (c.house ? 'Maison ' : 'Alliance ') + G.cellName(i) + ', ' +
         (v ? 'pion ' + G.playerName(v) : 'vide') +
-        (isLegal && v ? ', capturable' : '') + (showTruce ? ', sous Trêve' : '');
+        (isLegal && v && prefs.captures ? ', capturable' : '') + (showTruce ? ', sous Trêve' : '');
       el.setAttribute('aria-label', label);
       el.setAttribute('aria-disabled', isLegal ? 'false' : 'true');
     }
@@ -399,6 +421,8 @@
     });
 
     if (!game.over) $('#result').hidden = true;
+    // legende : seulement les aides activees
+    document.querySelectorAll('.legend [data-pref]').forEach(function (it) { it.hidden = !prefs[it.dataset.pref]; });
     renderActions();
   }
 
@@ -410,27 +434,32 @@
     $('#hint-btn').hidden = demo;
     $('#hint-btn').disabled = !isHumanTurn();
     $('#pause-btn').hidden = !demo || game.over;
-    $('#pause-btn').textContent = game.paused ? '▶ Reprendre' : '⏸ Pause';
+    $('#pause-btn').innerHTML = game.paused ? icon('play') + '<span>Reprendre</span>' : icon('pause') + '<span>Pause</span>';
     $('#actions').classList.toggle('is-over', game.over);
   }
 
+  // Deux lignes fixes (la place est reservee des qu'une IA joue, pour que le
+  // plateau ne bouge pas) : 1) nom de l'IA + temps, 2) ce qu'elle a calcule.
   function showAiInfo(pl, info) {
     var el = $('#ai-info');
-    if (!info) { el.textContent = ''; return; }
-    var parts = [aiById(pl.ai).name];
-    if (info.forced) parts.push('coup forcé');
-    else if (info.depth != null) {
-      parts.push('profondeur ' + info.depth);
-      parts.push(fmtInt(info.nodes) + ' positions');
-      if (info.mate) parts.push(info.score > 0 ? 'gain forcé trouvé' : 'se sait perdu');
-    } else if (info.iterations != null) {
-      parts.push(fmtInt(info.iterations) + ' simulations');
-      parts.push('victoire estimée ' + Math.round(info.winRate * 100) + ' %');
-    } else if (info.moves != null) {
-      parts.push(info.moves + ' coups ' + (pl.ai === 'random' ? 'possibles' : 'évalués'));
+    el.classList.toggle('has-ai', !!game && (game.players[1].type === 'ai' || game.players[2].type === 'ai'));
+    var l1 = '', l2 = [];
+    if (pl && info) {
+      l1 = aiById(pl.ai).name + (pl.level && aiById(pl.ai).levels ? ' (' + levelName(pl.level).toLowerCase() + ')' : '');
+      if (info.ms != null) l1 += ' · ' + (info.ms < 100 ? '< 0,1' : (info.ms / 1000).toFixed(1).replace('.', ',')) + ' s';
+      if (info.forced) l2.push('coup forcé');
+      else if (info.depth != null) {
+        l2.push('profondeur ' + info.depth);
+        l2.push(fmtInt(info.nodes) + ' positions');
+        if (info.mate) l2.push(info.score > 0 ? 'gain forcé' : 'se sait perdu');
+      } else if (info.iterations != null) {
+        l2.push(fmtInt(info.iterations) + ' simulations');
+      } else if (info.moves != null) {
+        l2.push(info.moves + ' coups ' + (pl.ai === 'random' ? 'possibles' : 'évalués'));
+      }
     }
-    if (info.ms != null && info.ms > 0) parts.push((info.ms / 1000).toFixed(1).replace('.', ',') + ' s');
-    el.textContent = parts.join(' · ');
+    $('#ai-info-1').textContent = l1;
+    $('#ai-info-2').textContent = l2.join(' · ');
   }
   function fmtInt(n) { return String(n || 0).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
 
@@ -467,7 +496,7 @@
     game.history.length = i;
     shownPieces.fill(-1);
     rebuildLog();
-    $('#ai-info').textContent = '';
+    showAiInfo(null);
     saveGame();
     startTurn();
     setStatus('Coup annulé. ' + $('#status').textContent);
@@ -520,12 +549,16 @@
     // Quitter le jeu : on suspend l'IA ; la partie reste sauvegardee.
     clearTimeout(turnTimer);
     AIRunner.cancel();
+    OddsRunner.cancel();
     if (id === 'screen-home') refreshHome();
   });
   E.on('screen:back', function () { E.screens.show('screen-home'); });
 
   /* ------------------------------------------------------------- IA (Worker) */
-  var AIRunner = (function () {
+  // Un « runner » = un Worker (ai-worker.js) et au plus un calcul en cours.
+  // Deux runners independants : l'IA qui joue, et l'estimation des chances
+  // (qui ne doit jamais interrompre la reflexion de l'IA).
+  function makeRunner() {
     var worker = null, broken = false, seq = 0, pending = null;
 
     function spawn() {
@@ -537,7 +570,7 @@
           if (!pending || d.id !== pending.id) return;
           var p = pending; pending = null;
           if (d.error) { console.warn('IA :', d.error); runLocal(p); return; }
-          p.cb({ move: d.move, info: d.info });
+          p.cb(d);
         };
         worker.onerror = function (e) {
           // Worker indisponible (file://, vieux navigateur...) : repli sur la page.
@@ -551,34 +584,72 @@
       return worker;
     }
 
+    // Repli sans Worker : meme calcul sur la page.
     function runLocal(p) {
       pending = p;
       setTimeout(function () {
         if (pending !== p) return;
-        var res = window.HeraldisAI.choose(p.state, p.ai, p.cfg);
+        var AI = window.HeraldisAI, m = p.msg;
+        var res = m.kind === 'estimate' ? { light: AI.estimate(m.state, m.cfg).light } : AI.choose(m.state, m.ai, m.cfg);
         if (pending !== p) return;
         pending = null;
         p.cb(res);
       }, 30);
     }
 
+    function run(msg, cb) {
+      cancel();
+      msg.id = ++seq;
+      var p = { id: msg.id, msg: msg, cb: cb };
+      pending = p;
+      var w = spawn();
+      if (w) w.postMessage(msg);
+      else runLocal(p);
+    }
+    // Abandonne le calcul en cours ; un worker occupe est remplace (arret immediat).
+    function cancel() {
+      if (!pending) return;
+      pending = null;
+      if (worker) { try { worker.terminate(); } catch (e) { /* ignore */ } worker = null; }
+    }
+
     return {
-      think: function (state, ai, cfg, cb) {
-        this.cancel();
-        var p = { id: ++seq, state: G.toJSON(state), ai: ai, cfg: cfg, cb: cb };
-        pending = p;
-        var w = spawn();
-        if (w) w.postMessage({ id: p.id, state: p.state, ai: ai, cfg: cfg });
-        else runLocal(p);
-      },
-      // Abandonne le calcul en cours ; un worker occupe est remplace (arret immediat).
-      cancel: function () {
-        if (!pending) return;
-        pending = null;
-        if (worker) { try { worker.terminate(); } catch (e) { /* ignore */ } worker = null; }
-      },
+      think: function (state, ai, cfg, cb) { run({ state: G.toJSON(state), ai: ai, cfg: cfg }, cb); },
+      estimate: function (state, cfg, cb) { run({ state: G.toJSON(state), kind: 'estimate', cfg: cfg }, cb); },
+      cancel: cancel,
     };
-  })();
+  }
+  var AIRunner = makeRunner();
+  var OddsRunner = makeRunner();
+
+  /* ------------------------------------------------- Chances de victoire */
+  // Barre bicolore sous les joueurs : probabilite de victoire de chacun
+  // (nulle comptee pour moitie), recalculee apres chaque coup dans son propre
+  // Worker. La valeur precedente reste affichee pendant le calcul.
+  var ODDS_TIME = 600;
+  var Odds = {
+    update: function () {
+      var el = $('#odds');
+      el.hidden = !prefs.odds;
+      if (!prefs.odds || !game) { OddsRunner.cancel(); return; }
+      var s = game.state, ply0 = s.ply;
+      if (s.winner) { OddsRunner.cancel(); Odds.show(s.winner === 1 ? 1 : s.winner === 2 ? 0 : 0.5); return; }
+      el.classList.add('is-computing');
+      OddsRunner.estimate(s, { time: ODDS_TIME }, function (res) {
+        if (!game || game.state !== s || s.ply !== ply0) return;
+        el.classList.remove('is-computing');
+        Odds.show(res.light);
+      });
+    },
+    show: function (light) {
+      var pc = Math.round(Math.max(0, Math.min(1, light)) * 100);
+      $('#odds-fill').style.transform = 'scaleX(' + (pc / 100) + ')';
+      $('#odds-t1').textContent = pc + ' %';
+      $('#odds-t2').textContent = (100 - pc) + ' %';
+      $('#odds').setAttribute('aria-label', 'Chances de victoire : Clair ' + pc + ' %, Foncé ' + (100 - pc) + ' %');
+    },
+    reset: function () { OddsRunner.cancel(); Odds.show(0.5); },
+  };
 
   /* --------------------------------------------------------- Statistiques */
   function recordStats(w) {
@@ -706,7 +777,13 @@
       });
     });
 
-    bindToggle('set-hints', 'hints');
+    // aides de jeu (toutes coupees par defaut) + chances de victoire
+    var rerender = function (v, init) { if (!init && game && E.screens.current() === 'screen-play') render(); };
+    bindToggle('set-hints', 'hints', rerender);
+    bindToggle('set-captures', 'captures', rerender);
+    bindToggle('set-last', 'lastMove', rerender);
+    bindToggle('set-truce', 'truce', rerender);
+    bindToggle('set-odds', 'odds');
     // au demarrage, on ne cree l'AudioContext qu'au 1er geste (politique autoplay)
     bindToggle('set-sound', 'sound', function (v, init) { if (!init || !v) E.sound.enable(v); });
     bindToggle('set-haptic', 'haptic');
@@ -740,7 +817,8 @@
     btn.hidden = !saved;
     if (saved) {
       var modeTxt = saved.mode === 'duo' ? 'à deux' : saved.mode === 'demo' ? 'IA contre IA' : 'contre ' + ((saved.players[1].type === 'ai' ? saved.players[1] : saved.players[2]).name || 'l\'IA');
-      btn.textContent = '▶ Reprendre la partie ' + modeTxt + ' (coup ' + ((saved.state && saved.state.ply) + 1) + ')';
+      btn.innerHTML = icon('play') + '<span></span>';
+      btn.lastChild.textContent = 'Reprendre la partie ' + modeTxt + ' (coup ' + ((saved.state && saved.state.ply) + 1) + ')';
     }
   }
 

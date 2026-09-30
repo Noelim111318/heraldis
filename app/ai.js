@@ -486,6 +486,27 @@
     };
   }
 
+  /* ------------------------------------------------- Chances de victoire */
+  // Probabilite que Clair gagne (nulle = 1/2), pour la barre de l'interface.
+  // Un minimax court detecte les issues forcees ; sinon on prend le taux de
+  // victoire du meilleur coup selon un MCTS tactique (simulations guidees).
+  function estimate(state, cfg) {
+    var s = state.board instanceof Int8Array ? state : G.fromJSON(state);
+    if (s.winner) return { light: s.winner === 1 ? 1 : s.winner === 2 ? 0 : 0.5 };
+    var budget = (cfg && cfg.time) || 500;
+    var moves = G.legalMoves(s);
+    if (moves.length === 1) {                     // coup force (passe) : on regarde apres
+      var c = G.clone(s);
+      G.play(c, moves[0]);
+      return estimate(c, cfg);
+    }
+    var mm = chooseMinimax(s, { depth: 4, time: Math.round(budget * 0.25) });
+    var pMover;
+    if (mm.info.mate) pMover = mm.info.score > 0 ? 1 : 0;
+    else pMover = chooseMcts(s, { time: Math.round(budget * 0.75) }, true).info.winRate;
+    return { light: s.toMove === 1 ? pMover : 1 - pMover };
+  }
+
   /* ----------------------------------------------------------- Aiguillage */
   function choose(state, aiId, cfg) {
     var s = state.board instanceof Int8Array ? state : G.fromJSON(state);
@@ -505,6 +526,7 @@
 
   var API = {
     choose: choose,
+    estimate: estimate,
     evaluate: evaluate,
     winningMoves: winningMoves,
     setRandom: setRandom,

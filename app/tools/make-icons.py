@@ -47,7 +47,6 @@ FRAME = ((58, 34, 18), (122, 78, 42))        # noyer : sombre, clair
 
 LOUP, AIGLE, OURS, CERF, SANGLIER = (94, 115, 152), (201, 150, 46), (134, 87, 58), (74, 132, 88), (160, 65, 60)
 
-CREAM = (245, 234, 210)                      # couleur des emblemes
 CRESTS = os.path.join(ROOT, "crests")        # silhouettes (crests/<nom>.png)
 
 # 2 x 2 cases : (couleur 1, couleur 2 ou None = Maison, pion 0/1/2, emblemes)
@@ -126,18 +125,32 @@ def background():
     return Image.composite(Image.new("RGBA", (S, S), GLOW + (255,)), img, glow_a)
 
 
+GOLD_TOP, GOLD_MID, GOLD_BOT = (235, 203, 124), (214, 174, 86), (191, 148, 64)   # dorure satinee (comme en jeu)
+
+
 def put_crest(img, name, cx, cy, size):
-    """Pose un embleme creme centre en (cx, cy)."""
+    """Pose un embleme en dorure satinee centre en (cx, cy), avec un fin liseré
+    sombre et une ombre douce (comme sur le plateau du jeu)."""
     path = os.path.join(CRESTS, name + ".png")
     if not os.path.exists(path):
         return
-    a = Image.open(path).getchannel("A").resize((int(size), int(size)), LANCZOS)
-    layer = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    n = int(size)
+    a = Image.open(path).getchannel("A").resize((n, n), LANCZOS)
     x, y = int(cx - size / 2), int(cy - size / 2)
     sh = Image.new("RGBA", (S, S), (0, 0, 0, 0))
-    sh.paste((0, 0, 0, 120), (x, y + max(1, int(size * 0.03))), a)
+    sh.paste((0, 0, 0, 130), (x, y + max(1, int(size * 0.03))), a)
     img.alpha_composite(sh.filter(ImageFilter.GaussianBlur(max(1, int(size * 0.02)))))
-    layer.paste(CREAM + (255,), (x, y), a)
+    edge = a.filter(ImageFilter.MaxFilter(3))                   # liseré : silhouette elargie
+    layer = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    layer.paste((35, 18, 0, 235), (x, y), edge)
+    img.alpha_composite(layer)
+    top = vgrad(n, n, GOLD_TOP, GOLD_MID).convert("RGBA")
+    bot = vgrad(n, n, GOLD_MID, GOLD_BOT).convert("RGBA")
+    half = Image.new("L", (n, n), 0)
+    ImageDraw.Draw(half).rectangle([0, n // 2, n, n], fill=255)
+    gold = Image.composite(bot, top, half.filter(ImageFilter.GaussianBlur(n // 4)))
+    layer = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    layer.paste(gold, (x, y), a)
     img.alpha_composite(layer)
 
 
