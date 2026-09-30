@@ -132,9 +132,7 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
 .toggle { display: flex; align-items: center; gap: 10px; padding: 7px 0; cursor: pointer; font-weight: 700; font-size: 0.92rem; }
 .toggle input { width: 20px; height: 20px; accent-color: var(--gold); flex: none; }
 
-.dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; flex: none; vertical-align: -2px; }
-.dot--light { background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.6), transparent 50%), var(--maple); box-shadow: 0 0 0 1px rgba(0,0,0,.45); }
-.dot--dark { background: radial-gradient(circle at 35% 30%, rgba(255,225,190,.3), transparent 50%), var(--walnut); box-shadow: 0 0 0 1px rgba(255,255,255,.3); }
+.dot { display: inline-block; width: 16px; height: 19px; flex: none; vertical-align: -4px; }   /* mini-pion (sprite) */
 
 /* -------------------------------------------------------------- Joueurs */
 .players { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
@@ -162,10 +160,9 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
 /* -------------------------------------------------------------- Plateau */
 /* Bois : grain procedural (SVG feTurbulence etire -> fibres), sans fichier
    image, donc disponible hors-ligne. --grain-dark : veines sombres (bois
-   clair, cases peintes, cadre) ; --grain-light : veines claires (noyer). */
+   clair, cases peintes, cadre). Le grain des pions est dans le sprite SVG. */
 :root {
   --grain-dark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.006 0.11' numOctaves='4' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.16 0 0 0 0 0.08 0 0 0 0 0.02 2.4 0 0 0 -0.95'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
-  --grain-light: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.006 0.11' numOctaves='4' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.78 0 0 0 0 0.56 0 0 0 0 0.36 2.2 0 0 0 -0.95'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
   --grain-soft: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.008 0.16' numOctaves='3' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.12 0 0 0 0 0.06 0 0 0 0 0.02 1.5 0 0 0 -0.6'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
   --maple: linear-gradient(135deg, #F4DEB2, #DDB67E 55%, #C29458);
   --walnut: linear-gradient(135deg, #6E4629, #432817 55%, #22140B);
@@ -229,36 +226,19 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
 .cell--alliance .sym:nth-of-type(1) { top: 5%; left: 5%; }
 .cell--alliance .sym:nth-of-type(2) { bottom: 5%; right: 5%; }
 
-/* Pion en bois tourne : fond = teinte, ::before = fil du bois (oriente au
-   hasard par pion, --rot), ::after = volume (reflet + bord plus sombre). */
+/* Pion en bois tourne, debout dans sa case (sprite SVG #pawn-1 / #pawn-2 dans
+   index.html). Le halo (dernier coup, capture) suit la silhouette. */
 .piece {
-  position: absolute; z-index: 2; top: 50%; left: 50%; width: 76%; height: 76%;
-  border-radius: 50%; transform: translate(-50%, -50%); overflow: hidden;
-  animation: drop 0.22s ease-out;
+  position: absolute; z-index: 2; left: 50%; bottom: 2%;
+  width: 74%; aspect-ratio: 100 / 120;
+  transform: translateX(-50%); pointer-events: none;
+  animation: drop 0.25s ease-out;
 }
-.piece::before, .piece::after { content: ''; position: absolute; border-radius: 50%; pointer-events: none; }
-.piece::before { inset: -20%; transform: rotate(var(--rot, 0deg)); background-size: 110px 110px; }
-.piece::after {
-  inset: 0;
-  background:
-    radial-gradient(ellipse 45% 32% at 36% 30%, rgba(255, 255, 255, var(--shine)), transparent 70%),
-    radial-gradient(circle at 42% 38%, transparent 55%, rgba(0, 0, 0, 0.38) 100%);
-}
-.piece--1 {
-  --shine: 0.5;
-  background: var(--maple);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(70, 40, 10, 0.55);
-}
-.piece--1::before { background-image: var(--grain-soft); opacity: 0.8; }
-.piece--2 {
-  --shine: 0.22;
-  background: var(--walnut);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(0, 0, 0, 0.7);
-}
-.piece--2::before { background-image: var(--grain-light); opacity: 0.3; }
+.piece svg { display: block; width: 100%; height: 100%; overflow: visible; }
 @keyframes drop {
-  0% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
-  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  0% { transform: translate(-50%, -35%); opacity: 0; }
+  70% { transform: translate(-50%, 3%); opacity: 1; }
+  100% { transform: translate(-50%, 0); opacity: 1; }
 }
 
 .cell.is-playable { cursor: pointer; }
@@ -270,7 +250,7 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
 @media (hover: hover) and (pointer: fine) {
   .cell.is-playable:hover { box-shadow: inset 0 0 0 3px #fff, var(--lip); }
 }
-.board.hints .cell.is-capturable .piece { box-shadow: 0 0 0 3px var(--red), 0 0 14px var(--red); animation: pulse 1.4s ease-in-out infinite; }
+.board.hints .cell.is-capturable .piece { filter: drop-shadow(0 0 2px var(--red)) drop-shadow(0 0 5px var(--red)); animation: pulse 1.4s ease-in-out infinite; }
 .board.hints .cell.is-capturable::after {
   content: '⚔'; position: absolute; z-index: 3; top: 3%; right: 6%;
   font-size: calc(var(--bw) * 0.04); color: #fff; text-shadow: 0 0 4px var(--red);
@@ -278,7 +258,7 @@ h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
 .cell.is-locked { cursor: not-allowed; }
 .cell.is-locked::before { background: rgba(8, 9, 16, 0.62); }
 /* Dernier coup : anneau blanc sur le pion (l'or est reserve aux Maisons). */
-.cell.is-last .piece { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6), 0 0 0 3px #FFF, 0 0 14px 3px rgba(255, 255, 255, 0.55); }
+.cell.is-last .piece { filter: drop-shadow(0 0 1.5px #FFF) drop-shadow(0 0 5px rgba(255, 255, 255, 0.8)); }
 .cell.is-win { animation: winGlow 1s ease-in-out infinite alternate; outline: 3px solid var(--green); outline-offset: -3px; }
 .cell.is-hint { outline: 4px solid var(--blue); outline-offset: -4px; animation: pulseHint 1s ease-in-out infinite; }
 .truce {
@@ -293,8 +273,8 @@ body.show-coords .coord { display: block; }
 body.show-coords .cell--alliance .sym:nth-of-type(2) { bottom: 8%; }
 
 @keyframes pulse {
-  0%, 100% { box-shadow: 0 0 0 3px var(--red), 0 0 6px var(--red); }
-  50% { box-shadow: 0 0 0 3px var(--red), 0 0 18px var(--red); }
+  0%, 100% { filter: drop-shadow(0 0 2px var(--red)) drop-shadow(0 0 3px var(--red)); }
+  50% { filter: drop-shadow(0 0 2px var(--red)) drop-shadow(0 0 9px var(--red)); }
 }
 @keyframes pulseHint { 50% { outline-color: #fff; } }
 @keyframes winGlow { to { box-shadow: inset 0 0 26px var(--green); } }

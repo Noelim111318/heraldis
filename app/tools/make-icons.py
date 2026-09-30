@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Genere les icones PWA de Heraldis : un coin de plateau en bois (2 x 2 cases,
 deux Alliances bicolores et deux Maisons bordees d'or) avec un pion clair
-(erable) et un pion fonce (noyer), sur le fond nuit de l'app. Les emblemes
+(erable) et un pion fonce (noyer) debout, sur le fond nuit de l'app. Les
+pions viennent de tools/pawn-*.png, rendus depuis le sprite SVG du jeu. Les emblemes
 des Maisons viennent de crests/*.png (sous les pions, comme en jeu).
 
 Sorties (a la racine du projet) :
@@ -43,8 +44,6 @@ GLOW = (201, 150, 46)
 GOLD = (232, 184, 74)
 
 FRAME = ((58, 34, 18), (122, 78, 42))        # noyer : sombre, clair
-MAPLE = ((196, 150, 92), (246, 222, 176))    # pion clair
-WALNUT = ((22, 12, 7), (92, 58, 34))         # pion fonce
 
 LOUP, AIGLE, OURS, CERF, SANGLIER = (94, 115, 152), (201, 150, 46), (134, 87, 58), (74, 132, 88), (160, 65, 60)
 
@@ -166,26 +165,18 @@ def paint_cell(img, box, c1, c2, seed, crests=()):
         stroke(img, "rounded_rectangle", [x0, y0, x1 - 1, y1 - 1], radius=radius, outline=(0, 0, 0, 110), width=max(1, int(w * 0.015)))
 
 
-def piece(img, cx, cy, r, colors, seed):
-    box = [cx - r, cy - r, cx + r, cy + r]
-    m = Image.new("L", (S, S), 0)
-    ImageDraw.Draw(m).ellipse(box, fill=255)
-    shadow(img, m, r * 0.10, r * 0.12, 170)
-
-    disc = Image.new("RGBA", (S, S), (0, 0, 0, 0))
-    wd = wood(int(2 * r) + 2, int(2 * r) + 2, colors[0], colors[1], seed, angle=-18)
-    disc.paste(wd, (int(cx - r), int(cy - r)))
-    # volume : reflet en haut a gauche, ombre en bas a droite
-    shade = Image.new("L", (S, S), 0)
-    ImageDraw.Draw(shade).ellipse([cx - r * 0.95, cy - r * 0.95, cx + r * 0.75, cy + r * 0.75], fill=255)
-    shade = shade.filter(ImageFilter.GaussianBlur(int(r * 0.35)))
-    dark = Image.new("RGBA", (S, S), (0, 0, 0, 255))
-    disc = Image.composite(disc, Image.blend(disc, dark, 0.45), shade)
-    hl = Image.new("RGBA", (S, S), (0, 0, 0, 0))
-    ImageDraw.Draw(hl).ellipse([cx - r * 0.62, cy - r * 0.70, cx + r * 0.05, cy - r * 0.18], fill=(255, 255, 255, 70))
-    disc.alpha_composite(hl.filter(ImageFilter.GaussianBlur(int(r * 0.14))))
-    img.paste(disc, (0, 0), m)
-    stroke(img, "ellipse", box, outline=(0, 0, 0, 120), width=max(2, int(r * 0.035)))
+def pawn(img, box, p):
+    """Pose le pion (tools/pawn-light.png / pawn-dark.png, rendus depuis le
+    sprite SVG d'index.html) debout dans la case, comme en jeu."""
+    path = os.path.join(HERE, "pawn-light.png" if p == 1 else "pawn-dark.png")
+    x0, y0, x1, y1 = box
+    cw = x1 - x0
+    w = cw * 0.80
+    h = w * 1.2
+    im = Image.open(path).convert("RGBA").resize((int(w), int(h)), LANCZOS)
+    layer = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    layer.paste(im, (int(x0 + (cw - w) / 2), int(y1 - h - cw * 0.01)), im)
+    img.alpha_composite(layer)
 
 
 def draw_board(img, scale):
@@ -210,7 +201,7 @@ def draw_board(img, scale):
         cy0 = y0 + pad + r * (cw + gap)
         paint_cell(img, (cx0, cy0, cx0 + cw, cy0 + cw), c1, c2, 20 + k, crests)
         if p:
-            piece(img, cx0 + cw / 2, cy0 + cw / 2, cw * 0.38, MAPLE if p == 1 else WALNUT, 40 + k)
+            pawn(img, (cx0, cy0, cx0 + cw, cy0 + cw), p)
 
 
 def compose(size, maskable=False, opaque=False):

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Heraldis</title>
   <meta name="description" content="Heraldis — jeu d&#39;alignement héraldique à 2 joueurs, contre un ami ou l&#39;ordinateur.">
-  <meta name="app-version" content="v1.4.0">
+  <meta name="app-version" content="v1.5.0">
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#0B0D19">
   <meta name="mobile-web-app-capable" content="yes">
@@ -21,6 +21,77 @@
 </head>
 <body>
 
+<!-- Pions en bois tourne (socle, corps conique, collerette, sphere), vus de
+     trois quarts. Dessines une fois ici, reutilises par <use href="#pawn-1|2">.
+     Chaque forme est peinte en entier (bois, puis volume + contour) avant la
+     suivante : c'est ce qui cache les aretes de derriere. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="pawn-blur" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="2.4"/></filter>
+    <!-- fil du bois vertical (le long de l'axe du pion) -->
+    <filter id="grain-maple" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.32 0.028" numOctaves="3" seed="5"/>
+      <feColorMatrix values="0 0 0 0 0.36  0 0 0 0 0.2  0 0 0 0 0.06  2.3 0 0 0 -0.95"/>
+    </filter>
+    <filter id="grain-walnut" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.32 0.028" numOctaves="3" seed="9"/>
+      <feColorMatrix values="0 0 0 0 0.66  0 0 0 0 0.4  0 0 0 0 0.2  2 0 0 0 -0.95"/>
+    </filter>
+    <pattern id="wood-maple" patternUnits="userSpaceOnUse" width="100" height="120">
+      <rect width="100" height="120" fill="#E9C993"/>
+      <rect width="100" height="120" filter="url(#grain-maple)"/>
+    </pattern>
+    <pattern id="wood-walnut" patternUnits="userSpaceOnUse" width="100" height="120">
+      <rect width="100" height="120" fill="#553018"/>
+      <rect width="100" height="120" filter="url(#grain-walnut)" opacity="0.5"/>
+    </pattern>
+    <!-- volume : cylindre eclaire de la gauche, faces du dessus, sphere -->
+    <linearGradient id="shade-cyl">
+      <stop offset="0" stop-color="#000" stop-opacity="0.6"/>
+      <stop offset="0.3" stop-color="#FFF" stop-opacity="0.32"/>
+      <stop offset="0.48" stop-color="#FFF" stop-opacity="0"/>
+      <stop offset="0.8" stop-color="#000" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.65"/>
+    </linearGradient>
+    <linearGradient id="shade-top" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFF" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.1"/>
+    </linearGradient>
+    <radialGradient id="shade-ball" cx="0.38" cy="0.32" r="0.75">
+      <stop offset="0" stop-color="#FFF" stop-opacity="0.7"/>
+      <stop offset="0.22" stop-color="#FFF" stop-opacity="0.18"/>
+      <stop offset="0.55" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.6"/>
+    </radialGradient>
+    <!-- formes -->
+    <path id="pw-base-side" d="M14 99 V106 A36 9 0 0 0 86 106 V99 Z"/>
+    <ellipse id="pw-base-top" cx="50" cy="99" rx="36" ry="9"/>
+    <path id="pw-body" d="M27 99 C36 90 43 72 44 50 H56 C57 72 64 90 73 99 A23 6 0 0 1 27 99 Z"/>
+    <path id="pw-collar-side" d="M35 49 V53 A15 5 0 0 0 65 53 V49 Z"/>
+    <ellipse id="pw-collar-top" cx="50" cy="49" rx="15" ry="5"/>
+    <circle id="pw-ball" cx="50" cy="30" r="19"/>
+    <ellipse id="pw-shadow" cx="54" cy="108" rx="40" ry="8" fill="#000" opacity="0.5" filter="url(#pawn-blur)"/>
+  </defs>
+  <symbol id="pawn-1" viewBox="0 0 100 120">
+    <use href="#pw-shadow"/>
+    <use href="#pw-base-side" fill="url(#wood-maple)"/><use href="#pw-base-side" fill="url(#shade-cyl)" stroke="#000" stroke-opacity="0.35" stroke-width="0.8"/>
+    <use href="#pw-base-top" fill="url(#wood-maple)"/><use href="#pw-base-top" fill="url(#shade-top)" stroke="#000" stroke-opacity="0.35" stroke-width="0.8"/>
+    <use href="#pw-body" fill="url(#wood-maple)"/><use href="#pw-body" fill="url(#shade-cyl)" stroke="#000" stroke-opacity="0.35" stroke-width="0.8"/>
+    <use href="#pw-collar-side" fill="url(#wood-maple)"/><use href="#pw-collar-side" fill="url(#shade-cyl)" stroke="#000" stroke-opacity="0.35" stroke-width="0.8"/>
+    <use href="#pw-collar-top" fill="url(#wood-maple)"/><use href="#pw-collar-top" fill="url(#shade-top)" stroke="#000" stroke-opacity="0.35" stroke-width="0.8"/>
+    <use href="#pw-ball" fill="url(#wood-maple)"/><use href="#pw-ball" fill="url(#shade-ball)" stroke="#000" stroke-opacity="0.35" stroke-width="0.8"/>
+  </symbol>
+  <symbol id="pawn-2" viewBox="0 0 100 120">
+    <use href="#pw-shadow"/>
+    <use href="#pw-base-side" fill="url(#wood-walnut)"/><use href="#pw-base-side" fill="url(#shade-cyl)" stroke="#000" stroke-opacity="0.35" stroke-width="0.8"/>
+    <use href="#pw-base-top" fill="url(#wood-walnut)"/><use href="#pw-base-top" fill="url(#shade-top)" stroke="#000" stroke-opacity="0.35" stroke-width="0.8"/>
+    <use href="#pw-body" fill="url(#wood-walnut)"/><use href="#pw-body" fill="url(#shade-cyl)" stroke="#000" stroke-opacity="0.35" stroke-width="0.8"/>
+    <use href="#pw-collar-side" fill="url(#wood-walnut)"/><use href="#pw-collar-side" fill="url(#shade-cyl)" stroke="#000" stroke-opacity="0.35" stroke-width="0.8"/>
+    <use href="#pw-collar-top" fill="url(#wood-walnut)"/><use href="#pw-collar-top" fill="url(#shade-top)" stroke="#000" stroke-opacity="0.35" stroke-width="0.8"/>
+    <use href="#pw-ball" fill="url(#wood-walnut)"/><use href="#pw-ball" fill="url(#shade-ball)" stroke="#000" stroke-opacity="0.35" stroke-width="0.8"/>
+  </symbol>
+</svg>
+
 <a class="skip-link" href="#main">Aller au contenu</a>
 
 <div class="stars" id="stars"></div>
@@ -34,7 +105,7 @@
   </div>
 
   <div class="header">
-    <div class="version-badge" id="app-version">v1.4.0</div>
+    <div class="version-badge" id="app-version">v1.5.0</div>
     <h1><span class="fleur" aria-hidden="true">⚜</span> Heraldis</h1>
     <p>Forgez vos alliances, alignez quatre blasons.</p>
   </div>
@@ -67,8 +138,8 @@
         <fieldset class="field">
           <legend>Vous jouez</legend>
           <div class="seg" id="side-seg">
-            <label><input type="radio" name="side" value="1" checked><span><i class="dot dot--light"></i> Clair <small>commence</small></span></label>
-            <label><input type="radio" name="side" value="2"><span><i class="dot dot--dark"></i> Foncé</span></label>
+            <label><input type="radio" name="side" value="1" checked><span><svg class="dot" viewBox="0 0 100 120" aria-hidden="true"><use href="#pawn-1"/></svg> Clair <small>commence</small></span></label>
+            <label><input type="radio" name="side" value="2"><span><svg class="dot" viewBox="0 0 100 120" aria-hidden="true"><use href="#pawn-2"/></svg> Foncé</span></label>
             <label><input type="radio" name="side" value="0"><span>🎲 Au hasard</span></label>
           </div>
         </fieldset>
@@ -76,10 +147,10 @@
 
       <div id="opt-demo" hidden>
         <div class="demo-grid">
-          <label class="select-field"><span><i class="dot dot--light"></i> IA Clair</span>
+          <label class="select-field"><span><svg class="dot" viewBox="0 0 100 120" aria-hidden="true"><use href="#pawn-1"/></svg> IA Clair</span>
             <select id="demo-ai-1"></select>
           </label>
-          <label class="select-field"><span><i class="dot dot--dark"></i> IA Foncé</span>
+          <label class="select-field"><span><svg class="dot" viewBox="0 0 100 120" aria-hidden="true"><use href="#pawn-2"/></svg> IA Foncé</span>
             <select id="demo-ai-2"></select>
           </label>
         </div>
@@ -114,13 +185,13 @@
 
     <div class="players">
       <div class="player" id="player-1">
-        <div class="player-head"><i class="dot dot--light"></i><span class="player-name" id="name-1">Clair</span></div>
+        <div class="player-head"><svg class="dot" viewBox="0 0 100 120" aria-hidden="true"><use href="#pawn-1"/></svg><span class="player-name" id="name-1">Clair</span></div>
         <div class="player-sub" id="sub-1"></div>
         <div class="player-reserve"><span id="reserve-1">13</span> en réserve</div>
         <div class="player-houses" id="houses-1" aria-label="Maisons possédées"></div>
       </div>
       <div class="player" id="player-2">
-        <div class="player-head"><i class="dot dot--dark"></i><span class="player-name" id="name-2">Foncé</span></div>
+        <div class="player-head"><svg class="dot" viewBox="0 0 100 120" aria-hidden="true"><use href="#pawn-2"/></svg><span class="player-name" id="name-2">Foncé</span></div>
         <div class="player-sub" id="sub-2"></div>
         <div class="player-reserve"><span id="reserve-2">13</span> en réserve</div>
         <div class="player-houses" id="houses-2" aria-label="Maisons possédées"></div>

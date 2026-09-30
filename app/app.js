@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  var APP_VERSION = 'v1.4.0';
+  var APP_VERSION = 'v1.5.0';
   var E = window.AppEngine;
   var D = window.HERALDIS_DATA;
   var G = window.HeraldisGame;
@@ -353,7 +353,8 @@
         if (v) {
           var pc = document.createElement('span');
           pc.className = 'piece piece--' + v;
-          pc.style.setProperty('--rot', Math.floor(Math.random() * 180) + 'deg');   // fil du bois propre a chaque pion
+          // pion dessine dans le sprite SVG d'index.html (#pawn-1 / #pawn-2)
+          pc.innerHTML = '<svg viewBox="0 0 100 120" aria-hidden="true"><use href="#pawn-' + v + '"/></svg>';
           el.insertBefore(pc, el.firstChild);
         }
         shownPieces[i] = v;
