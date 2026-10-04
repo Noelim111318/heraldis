@@ -297,6 +297,9 @@ a.btn { text-decoration: none; }                  /* lien presente comme un bout
 .cell.is-locked::before { background: rgba(8, 9, 16, 0.62); }
 /* Dernier coup : anneau blanc sur le pion (l'or est reserve aux Maisons). */
 .board.show-last .cell.is-last .piece .pawn use { filter: url(#pw-outline-last); }
+/* Les deux a la fois (le coup adverse que l'on peut reprendre) : contour parti
+   blanc / rouge. Plus specifique que les deux regles ci-dessus. */
+.board.show-last.show-captures .cell.is-last.is-capturable .piece .pawn use { filter: url(#pw-outline-both); }
 /* Vainqueur / conseil : contour net, sans halo. */
 .cell.is-win { outline: 3px solid var(--green); outline-offset: -3px; }
 .cell.is-hint { outline: 3px solid var(--blue); outline-offset: -3px; }
@@ -337,6 +340,10 @@ body.show-coords .cell--alliance .sym--2 { bottom: 8%; }
 .lg--house { box-shadow: inset 0 0 0 2px var(--gold); background: var(--card); }
 .lg--last { border-radius: 50%; box-shadow: 0 0 0 2px #FFF; background: var(--maple); }
 .lg--cap { border-radius: 50%; box-shadow: 0 0 0 2px var(--red); background: var(--walnut); }
+.lg--both {                                        /* anneau parti : blanc a gauche, rouge a droite */
+  width: 16px; height: 16px; margin: -2px; border-radius: 50%; border: 2px solid transparent;
+  background: var(--walnut) padding-box, linear-gradient(90deg, #FFF 50%, var(--red) 50%) border-box;
+}
 
 .log { width: 100%; font-size: 0.85rem; color: var(--ink-soft); }
 .log summary { cursor: pointer; font-weight: 800; color: var(--ink-dim); text-align: center; padding: 6px; }

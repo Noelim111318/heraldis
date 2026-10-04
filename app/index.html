@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Heraldis</title>
   <meta name="description" content="Heraldis — jeu d&#39;alignement héraldique à 2 joueurs, contre un ami ou l&#39;ordinateur.">
-  <meta name="app-version" content="v1.7.5">
+  <meta name="app-version" content="v1.7.6">
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#0B0D19">
   <meta name="mobile-web-app-capable" content="yes">
@@ -40,6 +40,16 @@
     <filter id="pw-outline-cap" x="-10%" y="-10%" width="120%" height="120%">
       <feMorphology in="SourceAlpha" operator="dilate" radius="3.2" result="d"/>
       <feFlood flood-color="#EF6A5E"/><feComposite in2="d" operator="in" result="o"/>
+      <feMerge><feMergeNode in="o"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- dernier coup ET capturable : contour parti, blanc a gauche, rouge a droite
+         (coupe sur l'axe du pion, x = 50 dans le viewBox) -->
+    <filter id="pw-outline-both" x="-10%" y="-10%" width="120%" height="120%">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="3.2" result="d"/>
+      <feFlood flood-color="#FFFFFF" x="-20" y="-20" width="70" height="160" result="w"/>
+      <feFlood flood-color="#EF6A5E" x="50" y="-20" width="70" height="160" result="r"/>
+      <feMerge result="f"><feMergeNode in="w"/><feMergeNode in="r"/></feMerge>
+      <feComposite in="f" in2="d" operator="in" result="o"/>
       <feMerge><feMergeNode in="o"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
     <filter id="pw-soft" x="-30%" y="-100%" width="160%" height="300%"><feGaussianBlur stdDeviation="1.4"/></filter>
@@ -155,7 +165,7 @@
   </div>
 
   <div class="header">
-    <div class="version-badge" id="app-version">v1.7.5</div>
+    <div class="version-badge" id="app-version">v1.7.6</div>
     <h1><span class="fleur" aria-hidden="true">⚜</span> Heraldis</h1>
     <p>Forgez vos alliances, alignez quatre blasons.</p>
   </div>
@@ -291,6 +301,7 @@
       <span><i class="lg lg--house"></i> Maison : immunisée</span>
       <span data-pref="lastMove"><i class="lg lg--last"></i> Dernier coup</span>
       <span data-pref="captures"><i class="lg lg--cap"></i> Capturable</span>
+      <span data-pref="lastMove captures"><i class="lg lg--both"></i> Dernier coup capturable</span>
       <span data-pref="truce">🏳️ Trêve</span>
     </div>
 
@@ -346,7 +357,7 @@
       <h3>Dans l'application</h3>
       <ul>
         <li>Les symboles allumés sous chaque joueur indiquent les Maisons qu'il possède.</li>
-        <li>Dans les réglages, des aides de jeu (à activer ou non) signalent le dernier coup (contour blanc), la case sous Trêve 🏳️, les pions capturables (contour rouge) et les coordonnées des cases.</li>
+        <li>Dans les réglages, des aides de jeu (à activer ou non) signalent le dernier coup (contour blanc), la case sous Trêve 🏳️, les pions capturables (contour rouge ; moitié blanc, moitié rouge quand le dernier coup adverse est capturable) et les coordonnées des cases.</li>
         <li>La barre au-dessus du plateau estime les chances de victoire de chaque joueur (calculée par l'ordinateur après chaque coup).</li>
         <li>« Conseil » demande à l'IA Minimax le coup qu'elle jouerait à votre place.</li>
       </ul>

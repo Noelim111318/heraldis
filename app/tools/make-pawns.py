@@ -141,6 +141,16 @@ def sprite():
       <feFlood flood-color="#EF6A5E"/><feComposite in2="d" operator="in" result="o"/>
       <feMerge><feMergeNode in="o"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
+    <!-- dernier coup ET capturable : contour parti, blanc a gauche, rouge a droite
+         (coupe sur l'axe du pion, x = {CX} dans le viewBox) -->
+    <filter id="pw-outline-both" x="-10%" y="-10%" width="120%" height="120%">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="{OUTLINE}" result="d"/>
+      <feFlood flood-color="#FFFFFF" x="-20" y="-20" width="{CX + 20}" height="160" result="w"/>
+      <feFlood flood-color="#EF6A5E" x="{CX}" y="-20" width="{100 - CX + 20}" height="160" result="r"/>
+      <feMerge result="f"><feMergeNode in="w"/><feMergeNode in="r"/></feMerge>
+      <feComposite in="f" in2="d" operator="in" result="o"/>
+      <feMerge><feMergeNode in="o"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
     <filter id="pw-soft" x="-30%" y="-100%" width="160%" height="300%"><feGaussianBlur stdDeviation="1.4"/></filter>
     <!-- fil du bois vertical (le long de l'axe du pion), peu contraste : bois mat -->
     <filter id="grain-maple" x="0" y="0" width="100%" height="100%">

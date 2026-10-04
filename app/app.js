@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  var APP_VERSION = 'v1.7.5';
+  var APP_VERSION = 'v1.7.6';
   var E = window.AppEngine;
   var D = window.HERALDIS_DATA;
   var G = window.HeraldisGame;
@@ -426,7 +426,10 @@
 
     if (!game.over) $('#result').hidden = true;
     // legende : seulement les aides activees
-    document.querySelectorAll('.legend [data-pref]').forEach(function (it) { it.hidden = !prefs[it.dataset.pref]; });
+    // data-pref peut lister plusieurs aides (« lastMove captures ») : toutes requises
+    document.querySelectorAll('.legend [data-pref]').forEach(function (it) {
+      it.hidden = !it.dataset.pref.split(' ').every(function (k) { return prefs[k]; });
+    });
     renderActions();
   }
 
