@@ -27,22 +27,22 @@ const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/cs
 
 // Styles d'impression : papier clair, encre sombre, titres dores fonces.
 const PRINT_CSS = `
-@page { size: A4; margin: 12mm 16mm 14mm; }
+@page { size: A4; margin: 10mm 15mm 13mm; }
 html, body { background: #FFFFFF !important; color: #2A2118 !important; }
 body { display: block !important; height: auto !important; min-height: 0 !important; overflow: visible !important; padding: 0 !important; }
 body::before { display: none !important; }
 .print-head { text-align: center; margin-bottom: 2mm; }
-.print-head h1 { font-family: 'Cinzel', serif; font-weight: 900; font-size: 26pt; color: #8A6414; letter-spacing: 1pt; }
+.print-head h1 { font-family: 'Cinzel', serif; font-weight: 900; font-size: 24pt; color: #8A6414; letter-spacing: 1pt; }
 .print-head p { font-size: 11pt; color: #6B5E4A; margin-top: 1mm; }
 .rules { background: none !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; }
 .rules h2 { display: none; }
-.rules h3 { font-family: 'Cinzel', serif; color: #8A6414 !important; font-size: 12.5pt; margin: 3.5mm 0 1mm !important; break-after: avoid; }
-.rules p, .rules li { color: #2A2118 !important; font-size: 10.5pt; line-height: 1.45; }
+.rules h3 { font-family: 'Cinzel', serif; color: #8A6414 !important; font-size: 12pt; margin: 2.6mm 0 0.6mm !important; break-after: avoid; }
+.rules p, .rules li { color: #2A2118 !important; font-size: 10pt; line-height: 1.38; }
 .rules strong { color: #140E08 !important; }
 .rules .rules-meta { color: #6B5E4A !important; font-size: 10pt !important; text-align: center; }
 .rules .example { background: #F1E7D2 !important; border-left-color: #B88A2E !important; }
 .crest-img { width: 1.35em; height: 1.35em; vertical-align: -0.35em; }
-.board-img { display: block; width: 62mm; height: 62mm; margin: 2mm auto 1mm; break-inside: avoid; border-radius: 2.2mm; }
+.board-img { display: block; width: 52mm; height: 52mm; margin: 2mm auto 1mm; break-inside: avoid; border-radius: 2.2mm; }
 `;
 
 function serve() {
@@ -100,7 +100,7 @@ function serve() {
     const sprites = Array.from(document.querySelectorAll('body > svg')).map((s) => s.outerHTML).join('');
     document.body.className = '';
     document.body.innerHTML = sprites +
-      '<header class="print-head"><h1>⚜ Heraldis</h1><p>Règles du jeu</p></header>';
+      '<header class="print-head"><h1>⚜ Heraldis</h1><p>Règles du jeu · un jeu de Jean-Sébastien MERMIN</p></header>';
     document.body.appendChild(rules);
     const st = document.createElement('style');
     st.textContent = css;
@@ -113,7 +113,7 @@ function serve() {
     path: OUT, format: 'A4', printBackground: true, preferCSSPageSize: true,
     displayHeaderFooter: true, headerTemplate: '<div></div>',
     footerTemplate: '<div style="width:100%;text-align:center;font:8pt sans-serif;color:#8A7A60">'
-      + 'Heraldis — règles du jeu · <span class="pageNumber"></span>/<span class="totalPages"></span></div>',
+      + 'Heraldis — un jeu de Jean-Sébastien MERMIN · © 2026, tous droits réservés · <span class="pageNumber"></span>/<span class="totalPages"></span></div>',
   });
   await browser.close();
   srv.close();

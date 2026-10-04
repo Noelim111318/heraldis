@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Heraldis</title>
   <meta name="description" content="Heraldis — jeu d&#39;alignement héraldique à 2 joueurs, contre un ami ou l&#39;ordinateur.">
-  <meta name="app-version" content="v1.7.6">
+  <meta name="author" content="Jean-Sébastien MERMIN">
+  <meta name="app-version" content="v1.8.0">
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#0B0D19">
   <meta name="mobile-web-app-capable" content="yes">
@@ -145,6 +146,16 @@
   <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
   <symbol id="i-replay" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66L20 8.5M20 3.5v5h-5"/></symbol>
   <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
+  <symbol id="i-ai" viewBox="0 0 24 24"><path d="M7 7h10v10H7zM10 4v3M14 4v3M10 17v3M14 17v3M4 10h3M4 14h3M17 10h3M17 14h3"/><path d="M10 10h4v4h-4z"/></symbol>
+  <symbol id="i-duo" viewBox="0 0 24 24"><path d="M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 4.3a3.5 3.5 0 0 1 0 6.4M18 14.4c2.1.7 3.5 2.8 3.5 5.6"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></symbol>
+  <symbol id="i-dice" viewBox="0 0 24 24"><path d="M6 4h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="M8.5 8.5h.01M15.5 8.5h.01M12 12h.01M8.5 15.5h.01M15.5 15.5h.01" stroke-width="3.2"/></symbol>
+  <symbol id="i-swords" viewBox="0 0 24 24"><path d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2M14.5 6.5 18 3h3v3l-3.5 3.5M5 14l4 4M7 17l-3 3M3 19l2 2"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2zM22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M5 20V11M10 20V5M15 20v-8M20 20V8M2.5 20.5h19"/></symbol>
+  <symbol id="i-crown" viewBox="0 0 24 24"><path d="M4 19h16M4.5 16 3 7l5.5 4L12 4l3.5 7L21 7l-1.5 9z"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><path d="M12 21.5a9.5 9.5 0 1 0 0-19 9.5 9.5 0 0 0 0 19zM12 11v6M12 7.5h.01"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21.5V3"/><path d="M5 3.8h13l-2.8 4.6L18 13H5z" fill="currentColor"/></symbol>
   <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10.5l5 5 5-5M5 19.5h14"/></symbol>
   <symbol id="i-close" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
   <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></symbol>
@@ -159,13 +170,13 @@
 
 <main class="container" id="main">
   <div class="install-row" id="install-row" hidden>
-    <button class="install-btn" id="install-btn" type="button" aria-label="Installer l'application">📲 Installer l'appli</button>
+    <button class="install-btn" id="install-btn" type="button" aria-label="Installer l'application"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg> Installer l'appli</button>
     <button class="install-dismiss" id="install-dismiss" type="button">Masquer</button>
     <p class="install-hint" id="install-hint" role="status" hidden></p>
   </div>
 
   <div class="header">
-    <div class="version-badge" id="app-version">v1.7.6</div>
+    <div class="version-badge" id="app-version">v1.8.0</div>
     <h1><span class="fleur" aria-hidden="true">⚜</span> Heraldis</h1>
     <p>Forgez vos alliances, alignez quatre blasons.</p>
   </div>
@@ -180,9 +191,9 @@
       <fieldset class="field">
         <legend>Mode</legend>
         <div class="seg" id="mode-seg">
-          <label><input type="radio" name="mode" value="ai" checked><span>🤖 Contre l'IA</span></label>
-          <label><input type="radio" name="mode" value="duo"><span>👥 À deux</span></label>
-          <label><input type="radio" name="mode" value="demo"><span>🍿 IA contre IA</span></label>
+          <label><input type="radio" name="mode" value="ai" checked><span><svg class="ico" aria-hidden="true"><use href="#i-ai"/></svg> Contre l'IA</span></label>
+          <label><input type="radio" name="mode" value="duo"><span><svg class="ico" aria-hidden="true"><use href="#i-duo"/></svg> À deux</span></label>
+          <label><input type="radio" name="mode" value="demo"><span><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg> IA contre IA</span></label>
         </div>
       </fieldset>
 
@@ -200,7 +211,7 @@
           <div class="seg" id="side-seg">
             <label><input type="radio" name="side" value="1" checked><span><svg class="dot" viewBox="0 0 100 120" aria-hidden="true"><use href="#pawn-1"/></svg> Clair <small>commence</small></span></label>
             <label><input type="radio" name="side" value="2"><span><svg class="dot" viewBox="0 0 100 120" aria-hidden="true"><use href="#pawn-2"/></svg> Foncé</span></label>
-            <label><input type="radio" name="side" value="0"><span>🎲 Au hasard</span></label>
+            <label><input type="radio" name="side" value="0"><span><svg class="ico" aria-hidden="true"><use href="#i-dice"/></svg> Au hasard</span></label>
           </div>
         </fieldset>
       </div>
@@ -218,12 +229,12 @@
 
       <p class="field-note" id="opt-duo" hidden>Deux joueurs sur le même appareil : passez-vous l'écran à chaque tour.</p>
 
-      <button class="btn btn--primary btn--wide" id="start-btn" type="button">⚔ Commencer</button>
+      <button class="btn btn--primary btn--wide" id="start-btn" type="button"><svg class="ico" aria-hidden="true"><use href="#i-swords"/></svg><span>Commencer</span></button>
     </section>
 
     <div class="home-links">
-      <button class="btn btn--soft" id="rules-btn" type="button">📜 Règles</button>
-      <button class="btn btn--soft" id="stats-btn" type="button">📊 Statistiques</button>
+      <button class="btn btn--soft" id="rules-btn" type="button"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg><span>Règles</span></button>
+      <button class="btn btn--soft" id="stats-btn" type="button"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><span>Statistiques</span></button>
     </div>
 
     <section class="panel panel--compact" aria-labelledby="settings-title">
@@ -244,7 +255,7 @@
     </section>
 
     <div class="home-footer">
-      <a class="diag-link" href="diag.html">Diagnostic</a>
+      <button class="diag-link" id="about-btn" type="button">À propos</button>
     </div>
   </div>
 
@@ -302,7 +313,7 @@
       <span data-pref="lastMove"><i class="lg lg--last"></i> Dernier coup</span>
       <span data-pref="captures"><i class="lg lg--cap"></i> Capturable</span>
       <span data-pref="lastMove captures"><i class="lg lg--both"></i> Dernier coup capturable</span>
-      <span data-pref="truce">🏳️ Trêve</span>
+      <span data-pref="truce"><svg class="ico ico--flag" aria-hidden="true"><use href="#i-flag"/></svg> Trêve</span>
     </div>
 
     <details class="log">
@@ -316,6 +327,9 @@
     <section class="panel rules">
       <h2>Règles de Heraldis</h2>
       <p class="rules-meta">2 joueurs · 8 ans et + · 15 à 20 minutes</p>
+
+      <h3>Matériel</h3>
+      <p>1 plateau de 25 cases, 13 pions Clairs, 13 pions Foncés.</p>
 
       <h3>But du jeu</h3>
       <p>Être le premier à <strong>aligner 4 pions</strong> de sa couleur, horizontalement, verticalement ou en diagonale.
@@ -353,18 +367,48 @@
       <p>On ne peut pas reprendre <strong>immédiatement</strong> une case que l'adversaire vient de vous prendre.
         Il faut jouer ailleurs ce tour-ci ; la reprise redevient possible ensuite.</p>
 
+      <h3>Résumé d'un tour</h3>
+      <ol class="rules-summary">
+        <li>Ai-je un pion en réserve ? Si non, je passe.</li>
+        <li>Sinon, je pose sur une case vide, ou je capture une Alliance adverse si je possède les deux Maisons requises
+          <em>(au tout premier coup, Clair doit jouer sur une Alliance)</em>.</li>
+        <li>Un pion capturé retourne dans la réserve de son propriétaire.</li>
+        <li>Quatre pions alignés : victoire. Plateau plein sans alignement : partie nulle.</li>
+      </ol>
+
       <div class="rules-app">
       <h3>Dans l'application</h3>
       <ul>
         <li>Les symboles allumés sous chaque joueur indiquent les Maisons qu'il possède.</li>
-        <li>Dans les réglages, des aides de jeu (à activer ou non) signalent le dernier coup (contour blanc), la case sous Trêve 🏳️, les pions capturables (contour rouge ; moitié blanc, moitié rouge quand le dernier coup adverse est capturable) et les coordonnées des cases.</li>
+        <li>Dans les réglages, des aides de jeu (à activer ou non) signalent le dernier coup (contour blanc), la case sous Trêve (drapeau blanc), les pions capturables (contour rouge ; moitié blanc, moitié rouge quand le dernier coup adverse est capturable) et les coordonnées des cases.</li>
         <li>La barre au-dessus du plateau estime les chances de victoire de chaque joueur (calculée par l'ordinateur après chaque coup).</li>
-        <li>« Conseil » demande à l'IA Minimax le coup qu'elle jouerait à votre place.</li>
+        <li>« Conseil » demande au Grand Maître le coup qu'il jouerait à votre place.</li>
       </ul>
       </div>
     </section>
     <a class="btn btn--soft" id="rules-pdf" href="regles-heraldis.pdf" download="Heraldis - Règles du jeu.pdf"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg><span>Règles en PDF</span></a>
     <button class="btn btn--soft" id="rules-back-btn" type="button"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg><span>Retour</span></button>
+  </div>
+
+  <!-- ===================================================== A PROPOS -->
+  <div class="screen" id="screen-about">
+    <section class="panel about">
+      <h2>À propos</h2>
+      <p class="about-title"><span class="fleur" aria-hidden="true">⚜</span> Heraldis</p>
+      <p class="about-by">Un jeu de <strong>Jean-Sébastien MERMIN</strong></p>
+      <p class="about-meta">2 joueurs · 8 ans et + · 15 à 20 minutes</p>
+      <p><a href="mailto:mermin@gmail.com">mermin@gmail.com</a></p>
+      <p class="about-rights">© 2026 Jean-Sébastien MERMIN. Tous droits réservés.<br>
+        Le jeu, ses règles et l'application ne peuvent être reproduits ni exploités sans l'accord de l'auteur.</p>
+      <h3>Crédits</h3>
+      <ul>
+        <li>Illustrations des Maisons : visuels provisoires générés par intelligence artificielle.</li>
+        <li>Polices <a href="fonts/OFL-cinzel.txt">Cinzel</a> et <a href="fonts/OFL-nunito.txt">Nunito</a>, sous licence SIL Open Font License 1.1.</li>
+        <li>Application hors-ligne, installable sur téléphone, sans publicité ni collecte de données.</li>
+      </ul>
+      <p class="about-version">Version <span id="about-version"></span> · <a href="diag.html">Diagnostic</a></p>
+    </section>
+    <button class="btn btn--soft" id="about-back-btn" type="button"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg><span>Retour</span></button>
   </div>
 
   <!-- ===================================================== STATISTIQUES -->

@@ -1,0 +1,22 @@
+Heraldis — jeu de société et application
+Copyright © 2026 Jean-Sébastien MERMIN. Tous droits réservés.
+Contact : mermin@gmail.com
+
+Le jeu Heraldis (nom, texte des règles, conception du plateau) et le code de
+l'application sont l'œuvre de l'auteur. Le code et les règles sont consultables
+publiquement à titre de présentation ; aucune licence d'utilisation, de
+reproduction, de modification, de distribution ou d'exploitation commerciale n'est
+accordée sans l'accord écrit préalable de l'auteur.
+
+Les illustrations des cinq Maisons (app/crests/) sont des visuels provisoires,
+générés par intelligence artificielle pour la démonstration ; elles ne font pas
+partie de l'œuvre revendiquée et ont vocation à être remplacées.
+
+Composants tiers, soumis à leur propre licence :
+
+- Police Cinzel (app/fonts/cinzel-latin.woff2) — SIL Open Font License 1.1,
+  texte complet : app/fonts/OFL-cinzel.txt
+- Police Nunito (app/engine/fonts/) — SIL Open Font License 1.1,
+  texte complet : app/fonts/OFL-nunito.txt
+- Moteur PWA (app/engine/) — issu de la boîte à outils pwa-engine de l'auteur,
+  sous licence MIT (https://github.com/Noelim111318/toolbox).

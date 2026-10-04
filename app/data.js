@@ -34,16 +34,17 @@
     alignToWin: 4,
 
     // IA proposees, de la plus faible a la plus forte (`stars`, mesure en
-    // tournoi a temps egal). `levels` : reglages par niveau, lus par ai.js.
+    // tournoi a temps egal), presentees comme des personnages ; `tech` = la
+    // methode, affichee en petit. `levels` : reglages par niveau, lus par ai.js.
     ais: [
       {
-        id: 'random', name: 'Aléatoire', stars: 1, icon: '🎲',
-        desc: 'Joue un coup légal au hasard. Idéal pour découvrir les règles.',
+        id: 'random', name: 'Le Novice', tech: 'coups au hasard', stars: 1,
+        desc: 'Pose ses pions un peu au hasard. Idéal pour découvrir les règles.',
         levels: null,
       },
       {
-        id: 'greedy', name: 'Glouton', stars: 2, icon: '🍖',
-        desc: 'Regarde un seul coup à l\'avance et prend celui qui améliore le plus sa position. Voit les menaces immédiates.',
+        id: 'greedy', name: 'L\'Écuyer', tech: 'glouton, un coup d\'avance', stars: 2,
+        desc: 'Cherche le meilleur coup immédiat et pare les menaces évidentes, sans voir plus loin.',
         levels: {
           facile:    { noise: 12 },
           moyen:     { noise: 4 },
@@ -51,8 +52,8 @@
         },
       },
       {
-        id: 'mcts', name: 'MCTS', stars: 3, icon: '🎰',
-        desc: 'Monte-Carlo Tree Search (UCT) : simule des milliers de fins de partie au hasard et joue le coup qui gagne le plus souvent.',
+        id: 'mcts', name: 'Le Chevalier', tech: 'Monte-Carlo (MCTS)', stars: 3,
+        desc: 'Imagine des centaines de fins de partie et choisit le coup qui gagne le plus souvent.',
         levels: {
           facile:    { time: 250 },
           moyen:     { time: 1200 },
@@ -60,8 +61,8 @@
         },
       },
       {
-        id: 'mcts-heavy', name: 'MCTS tactique', stars: 4, icon: '🧠',
-        desc: 'MCTS dont les simulations sont guidées : elles saisissent les victoires, bloquent les menaces et privilégient les Maisons.',
+        id: 'mcts-heavy', name: 'Le Stratège', tech: 'Monte-Carlo guidé', stars: 4,
+        desc: 'Comme le Chevalier, mais ses parties imaginées sont jouées avec bon sens : il laisse peu passer.',
         levels: {
           facile:    { time: 250 },
           moyen:     { time: 1200 },
@@ -69,8 +70,8 @@
         },
       },
       {
-        id: 'minimax', name: 'Minimax α-β', stars: 5, icon: '🌳',
-        desc: 'Explore l\'arbre des coups en supposant que l\'adversaire joue au mieux. Élagage alpha-bêta, approfondissement itératif et table de transposition.',
+        id: 'minimax', name: 'Le Grand Maître', tech: 'Minimax α-β', stars: 5,
+        desc: 'Calcule plusieurs coups à l\'avance en supposant que vous jouez au mieux. Redoutable.',
         levels: {
           facile:    { depth: 2,  time: 400 },
           moyen:     { depth: 4,  time: 1200 },

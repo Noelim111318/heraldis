@@ -8,7 +8,7 @@
  *     puis ajoute tout nouveau fichier statique a APP_SHELL ci-dessous.
  */
 self.APP_SLUG = 'heraldis';
-self.APP_VERSION = 'v1.7.6';
+self.APP_VERSION = 'v1.8.0';
 
 self.APP_SHELL = [
   './',
@@ -23,6 +23,8 @@ self.APP_SHELL = [
   './favicon.ico',
   './regles-heraldis.pdf',
   './fonts/cinzel-latin.woff2',
+  './fonts/OFL-cinzel.txt',
+  './fonts/OFL-nunito.txt',
   './crests/loup.png',
   './crests/aigle.png',
   './crests/ours.png',

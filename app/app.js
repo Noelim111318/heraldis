@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  var APP_VERSION = 'v1.7.6';
+  var APP_VERSION = 'v1.8.0';
   var E = window.AppEngine;
   var D = window.HERALDIS_DATA;
   var G = window.HeraldisGame;
@@ -56,6 +56,14 @@
   function levelName(id) {
     for (var i = 0; i < D.levels.length; i++) if (D.levels[i].id === id) return D.levels[i].name;
     return '';
+  }
+  // « de » + nom, accorde : du Chevalier, de l'Écuyer, de la Dame, de Clair.
+  function deName(name) {
+    if (/^Le /.test(name)) return 'du ' + name.slice(3);
+    if (/^Les /.test(name)) return 'des ' + name.slice(4);
+    if (/^La /.test(name)) return 'de la ' + name.slice(3);
+    if (/^L['’]/.test(name)) return "de l'" + name.slice(2);
+    return 'de ' + name;
   }
   function aiLabel(ai, level) {
     var a = aiById(ai);
@@ -145,7 +153,7 @@
       });
     } else {
       var human = prefs.side === '0' ? (Math.random() < 0.5 ? 1 : 2) : Number(prefs.side);
-      var ai = { type: 'ai', ai: prefs.ai, level: prefs.level, name: 'IA ' + aiById(prefs.ai).name, sub: aiById(prefs.ai).levels ? levelName(prefs.level) : '' };
+      var ai = { type: 'ai', ai: prefs.ai, level: prefs.level, name: aiById(prefs.ai).name, sub: aiById(prefs.ai).levels ? levelName(prefs.level) : '' };
       P[human] = { type: 'human', name: 'Vous', sub: G.playerName(human) };
       P[3 - human] = ai;
     }
@@ -292,13 +300,15 @@
       title = 'Match nul';
       sub = capped ? 'Partie arrêtée après ' + DEMO_MAX_PLY + ' coups.' : 'Le plateau est plein, sans alignement.';
     } else if (game.mode === 'ai') {
-      title = humanWon ? '🏆 Victoire !' : 'Défaite…';
+      title = humanWon ? 'Victoire !' : 'Défaite…';
       sub = humanWon ? 'Vous alignez quatre blasons.' : game.players[w].name + ' aligne quatre blasons.';
     } else {
-      title = '🏆 Victoire de ' + (game.mode === 'demo' ? game.players[w].name + ' (' + G.playerName(w) + ')' : G.playerName(w));
+      title = 'Victoire ' + (game.mode === 'demo' ? deName(game.players[w].name) + ' (' + G.playerName(w) + ')' : 'de ' + G.playerName(w));
       sub = 'Quatre blasons alignés en ' + Math.ceil(s.ply / 2) + ' tours.';
     }
-    $('#result-title').textContent = title;
+    // couronne (sprite #i-crown) devant toute victoire
+    $('#result-title').innerHTML = (w !== G.DRAW && !(game.mode === 'ai' && !humanWon) ? icon('crown') : '') + '<span></span>';
+    $('#result-title').lastChild.textContent = title;
     $('#result-sub').textContent = sub;
     $('#result').hidden = false;
     setStatus(w === G.DRAW ? 'Partie nulle.' : 'Partie terminée.');
@@ -399,7 +409,7 @@
       if (showTruce && !truce) {
         truce = document.createElement('span');
         truce.className = 'truce';
-        truce.textContent = '🏳️';
+        truce.innerHTML = '<svg aria-hidden="true"><use href="#i-flag"/></svg>';
         truce.title = 'Trêve';
         el.appendChild(truce);
       } else if (!showTruce && truce) truce.remove();
@@ -454,6 +464,7 @@
     if (pl && info) {
       l1 = aiById(pl.ai).name + (pl.level && aiById(pl.ai).levels ? ' (' + levelName(pl.level).toLowerCase() + ')' : '');
       if (info.ms != null) l1 += ' · ' + (info.ms < 100 ? '< 0,1' : (info.ms / 1000).toFixed(1).replace('.', ',')) + ' s';
+      l2.push(aiById(pl.ai).tech);
       if (info.forced) l2.push('coup forcé');
       else if (info.depth != null) {
         l2.push('profondeur ' + info.depth);
@@ -742,11 +753,11 @@
       var inp = document.createElement('input');
       inp.type = 'radio'; inp.name = 'ai'; inp.value = a.id;
       var span = document.createElement('span');
-      var ic = document.createElement('span'); ic.className = 'ai-icon'; ic.textContent = a.icon;
       var nm = document.createElement('span'); nm.className = 'ai-name'; nm.textContent = a.name;
       var force = document.createElement('small'); force.textContent = '★★★★★'.slice(0, a.stars || 1); nm.appendChild(force);
       var ds = document.createElement('span'); ds.className = 'ai-desc'; ds.textContent = a.desc;
-      span.appendChild(ic); span.appendChild(nm); span.appendChild(ds);
+      var tc = document.createElement('span'); tc.className = 'ai-tech'; tc.textContent = a.tech; ds.appendChild(tc);
+      span.appendChild(nm); span.appendChild(ds);
       lab.appendChild(inp); lab.appendChild(span);
       list.appendChild(lab);
     });
@@ -765,7 +776,7 @@
         (a.levels ? D.levels : [null]).forEach(function (l) {
           var o = document.createElement('option');
           o.value = a.id + (l ? ':' + l.id : '');
-          o.textContent = a.icon + ' ' + a.name + (l ? ' — ' + l.name : '');
+          o.textContent = a.name + (l ? ' — ' + l.name : '');
           sel.appendChild(o);
         });
       });
@@ -847,6 +858,11 @@
   $('#rules-btn').addEventListener('click', function () { E.screens.show('screen-rules', { push: true }); });
   $('#stats-btn').addEventListener('click', function () { renderStats(); E.screens.show('screen-stats', { push: true }); });
   $('#rules-back-btn').addEventListener('click', goHome);
+  $('#about-btn').addEventListener('click', function () {
+    $('#about-version').textContent = APP_VERSION;
+    E.screens.show('screen-about', { push: true });
+  });
+  $('#about-back-btn').addEventListener('click', goHome);
   $('#stats-back-btn').addEventListener('click', goHome);
   $('#stats-reset-btn').addEventListener('click', function () {
     if (!window.confirm('Effacer toutes les statistiques ?')) return;

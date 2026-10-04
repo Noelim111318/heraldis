@@ -1,6 +1,6 @@
 # Heraldis
 
-Le jeu Heraldis (regles : `../Heraldis_Regles_DEFINITIVES.md`) en PWA installable,
+Le jeu Heraldis (regles : `../REGLES.md`) en PWA installable,
 hors-ligne, sans build. Construite sur **pwa-engine** (dossier `engine/`).
 
 Modes : contre l'ordinateur, a deux sur le meme appareil, IA contre IA.
