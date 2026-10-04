@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  var APP_VERSION = 'v1.7.4';
+  var APP_VERSION = 'v1.7.5';
   var E = window.AppEngine;
   var D = window.HERALDIS_DATA;
   var G = window.HeraldisGame;
@@ -648,7 +648,7 @@
     show: function (light) {
       var pc = Math.round(Math.max(0, Math.min(1, light)) * 100);
       var fill = $('#odds-fill');
-      fill.style.width = pc + '%';
+      fill.style.transform = 'translateX(' + (pc - 100) + '%)';
       fill.classList.toggle('is-full', pc === 0 || pc === 100);   // pas de trait de separation au bord
       $('#odds-t1').textContent = pc + ' %';
       $('#odds-t2').textContent = (100 - pc) + ' %';

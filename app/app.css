@@ -61,6 +61,9 @@ body.play-active .header { padding-top: 0; }
 body.play-active .header h1 { font-size: 1.25rem; text-shadow: none; }
 body.play-active .header p { display: none; }
 body.play-active .container { gap: 12px; }
+/* En partie, le plateau cache presque tout le ciel : etoiles figees (chaque
+   cycle de scintillement coute un petit recalcul de styles sur telephone). */
+body.play-active .star { animation-play-state: paused; opacity: 0.7; }
 
 h2 { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
 .h-small { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
@@ -180,10 +183,10 @@ a.btn { text-decoration: none; }                  /* lien presente comme un bout
   position: relative; flex: 1; height: 10px; border-radius: 999px; overflow: hidden;
   background: #4A2B16; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45);
 }
-.odds-fill {
-  position: absolute; left: 0; top: 0; bottom: 0; width: 50%;
+.odds-fill {                     /* glisse (transform, sur le GPU) au lieu de changer de largeur */
+  position: absolute; left: 0; top: 0; bottom: 0; width: 100%;
   background: #E2BF84; border-right: 2px solid #140A03;
-  transition: width 0.6s ease;
+  transform: translateX(-50%); transition: transform 0.6s ease;
 }
 .odds-fill.is-full { border-right: 0; }
 .odds.is-computing .odds-bar { opacity: 0.75; }

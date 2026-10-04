@@ -135,14 +135,21 @@ body::before {
 }
 .star {
   position: absolute;
-  background: var(--star-color);
+  /* L'eclat propre a chaque etoile (--op) est porte par la couleur, PAS par
+     l'animation : des keyframes qui lisent une variable (opacity: var(--op))
+     ne peuvent pas tourner sur le compositeur. Le navigateur recalculait alors
+     les styles de toute la page a chaque image, en permanence (plus de la
+     moitie du fil principal d'un telephone en pleine partie). Ici, keyframes a
+     valeurs fixes = animation entierement sur le GPU. */
+  background: color-mix(in srgb, var(--star-color) calc(var(--op, 0.6) * 100%), transparent);
   border-radius: 50%;
   opacity: 0;
+  will-change: opacity, transform;
   animation: twinkle var(--d) ease-in-out infinite var(--delay);
 }
 @keyframes twinkle {
   0%, 100% { opacity: 0; transform: scale(0.5); }
-  50% { opacity: var(--op); transform: scale(1); }
+  50% { opacity: 1; transform: scale(1); }
 }
 
 /* ------------------------------------------------------------- Conteneur */
@@ -352,7 +359,7 @@ body.screen-active {
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
-  .star { opacity: var(--op); }        /* visibles mais figees */
+  .star { opacity: 1; }                 /* visibles mais figees (eclat dans la couleur) */
 }
 
 /* --------------------------------------------------------------- Print */

@@ -22,7 +22,7 @@
 (function (global) {
   'use strict';
 
-  var ENGINE_VERSION = '1.2.1';
+  var ENGINE_VERSION = '1.2.2';
 
   /* ------------------------------------------------------------ Selecteurs */
   function $(sel, root) { return (root || document).querySelector(sel); }
