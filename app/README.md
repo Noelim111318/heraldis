@@ -20,12 +20,30 @@ python3 -m http.server 8000
 |---|---|
 | `data.js` | plateau, Maisons, IA proposees et leurs niveaux (`window.HERALDIS_DATA`) |
 | `game.js` | moteur de regles pur (`HeraldisGame`) : Premier Serment, capture, immunite, Treve, passe, fin |
-| `ai.js` | les IA (`HeraldisAI.choose(state, id, cfg)`) |
-| `ai-worker.js` | execute l'IA dans un Web Worker (repli automatique sur la page si indisponible) |
-| `app.js` | ecrans, deroulement de la partie, annuler, conseil, sauvegarde, statistiques |
-| `app.css` | theme (tokens `:root`) + plateau |
+| `ai.js` | les IA (`HeraldisAI.choose(state, id, cfg)`) et l'estimation des chances (`HeraldisAI.estimate`) |
+| `ai-worker.js` | execute l'IA dans un Web Worker (repli automatique sur la page si indisponible) ; un 2e Worker estime les chances de victoire |
+| `app.js` | ecrans, deroulement de la partie, aides de jeu, annuler, conseil, sauvegarde, statistiques |
+| `app.css` | theme (tokens `:root`) + plateau, cases creusees, contours des pions |
+| `index.html` | ecrans + sprites SVG (pions generes par `tools/make-pawns.py`, icones des boutons) |
+| `crests/` | les 5 emblemes des Maisons (silhouettes, teintees en CSS : dorure satinee sur le plateau) |
+| `fonts/` | Cinzel (titres, OFL), auto-hebergee |
+| `regles-heraldis.pdf` | les regles en PDF (bouton de l'ecran des regles), genere par `tools/make-rules-pdf.js` |
 | `engine/` | le moteur, **copie** depuis toolbox/pwa-engine (ne pas editer ici) |
 | `tools/tests/` | tests Node des regles et des IA |
+
+## Outils de generation
+
+| Commande | Quand |
+|---|---|
+| `python3 tools/make-pawns.py` | apres modification du profil des pions (`PROFIL`, angle de vue, contours) : reecrit le sprite dans `index.html` |
+| `python3 tools/make-icons.py` | apres modification des pions ou des emblemes (icones + favicon ; necessite Pillow). Les pions viennent de `tools/pawn-*.png`, rendus depuis le sprite |
+| `node tools/make-rules-pdf.js` | apres modification du texte des regles (necessite Playwright) |
+
+Apres l'un d'eux : `./tools/bump-version.sh vX.Y.Z` (ces fichiers sont dans le cache hors-ligne).
+
+**Avant chaque livraison** : `./tools/check-app.sh --compat <derniere-revision-publiee>`.
+Ne jamais retirer un identifiant d'element de `index.html` (masquer plutot) : pendant une
+mise a jour, l'ancien script tourne un instant sur la nouvelle page.
 
 ## Les IA
 
